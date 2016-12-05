@@ -1,0 +1,22 @@
+{
+  "name": "dvp-dashboardservice",
+  "version": "1.0.0",
+  "description": "Dashboard Data Retrieve Service",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DuoSoftware/DVP-DashBoardService.git"
+  },
+  "author": "heshan.i",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DuoSoftware/DVP-DashBoardService/issues"
+  },
+  "homepage": "https://github.com/DuoSoftware/DVP-DashBoardService#readme",
+  "dependencies": {
+    "config": "^1.24.0"
+  }
+}
