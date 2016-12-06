@@ -45,7 +45,7 @@ server.get('/DashboardGraph/Calls/:duration', authorization({resource:"dashboard
 server.get('/DashboardGraph/Channels/:duration', authorization({resource:"dashboardgraph", action:"read"}), graphService.OnGetChannels);
 server.get('/DashboardGraph/Bridge/:duration', authorization({resource:"dashboardgraph", action:"read"}), graphService.OnGetBridge);
 server.get('/DashboardGraph/Queued/:duration', authorization({resource:"dashboardgraph", action:"read"}), graphService.OnGetQueued);
-server.get('/DashboardGraph/ConcurrentQueued/:duration', authorization({resource:"dashboardgraph", action:"read"}), graphService.OnGetConcurrentQueue);
+server.get('/DashboardGraph/ConcurrentQueued/:queue/:duration', authorization({resource:"dashboardgraph", action:"read"}), graphService.OnGetConcurrentQueue);
 server.get('/DashboardGraph/AllConcurrentQueued/:duration', authorization({resource:"dashboardgraph", action:"read"}), graphService.OnGetConcurrentQueueTotal);
 server.get('/DashboardGraph/NewTicket/:duration', authorization({resource:"dashboardgraph", action:"read"}), graphService.OnGetTotalNewTicket);
 server.get('/DashboardGraph/ClosedTicket/:duration', authorization({resource:"dashboardgraph", action:"read"}), graphService.OnGetTotalClosedTicket);
