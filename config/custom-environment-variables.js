@@ -36,5 +36,10 @@ module.exports = {
         "ip": "LB_FRONTEND",
         "port": "LB_PORT"
 
+    },
+
+    "StatsD":{
+        "statsDIp":"SYS_STATSD_HOST",
+        "statsDPort": "SYS_STATSD_PORT"
     }
 };

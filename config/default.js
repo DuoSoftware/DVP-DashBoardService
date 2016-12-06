@@ -37,6 +37,11 @@ module.exports = {
         "ip": "192.168.0.101",
         "port": "3636"
 
+    },
+
+    "StatsD":{
+        "statsDIp":"45.55.142.207",
+        "statsDPort": 8125
     }
 
 };
