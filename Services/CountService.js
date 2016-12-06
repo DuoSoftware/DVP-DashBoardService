@@ -242,7 +242,7 @@ var onGetTotalTime = function(tenant, company, window, param1, param2){
 
     var reply = {};
 
-    var totalTimeSearch = util.format('TOTALTIME:%s:%s:%s:*:%s:%s', tenant, company, window, param1, param2);
+    var totalTimeSearch = util.format('TOTALTIME:%s:%s:%s:%s:%s', tenant, company, window, param1, param2);
 
     redisHandler.SearchObjects(totalTimeSearch, function(err, result){
         if(err){
