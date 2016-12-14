@@ -42,6 +42,10 @@ module.exports = {
     "StatsD":{
         "statsDIp":"45.55.142.207",
         "statsDPort": 8125
+    },
+
+    "ServiceConfig":{
+        "addCurrentSessions": false
     }
 
 };

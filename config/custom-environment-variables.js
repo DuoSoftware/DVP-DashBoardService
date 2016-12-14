@@ -41,5 +41,9 @@ module.exports = {
     "StatsD":{
         "statsDIp":"SYS_STATSD_HOST",
         "statsDPort": "SYS_STATSD_PORT"
+    },
+
+    "ServiceConfig":{
+        "addCurrentSessions": "HOST_DASHBOARDSERVICE_ADDSESSION"
     }
 };

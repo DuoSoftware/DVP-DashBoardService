@@ -8,6 +8,7 @@ var util = require('util');
 var redisHandler = require('../RedisHandler.js');
 var moment = require('moment');
 var Q = require('q');
+var config = require('config');
 
 var UniqueArray = function(array) {
     var processed = [];
@@ -326,30 +327,56 @@ var onGetAverageTime = function(tenant, company, window, param1, param2){
     var totalCount = 0;
     var average = 0;
 
-    onGetCurrentTotalTime(tenant, company, window, param1, param2).then(function(result){
-        totalTime = totalTime + result.value;
-        return onGetTotalTime(tenant, company, window, param1, param2);
-    }).then(function(result){
-        totalTime = totalTime + result.value;
-        return onGetTotalCount(tenant, company, window, param1, param2);
-    }).then(function(result){
-        totalCount = result.value;
+    if(config.ServiceConfig.addCurrentSessions){
+        onGetCurrentTotalTime(tenant, company, window, param1, param2).then(function(result){
+            totalTime = totalTime + result.value;
+            return onGetTotalTime(tenant, company, window, param1, param2);
+        }).then(function(result){
+            totalTime = totalTime + result.value;
+            return onGetTotalCount(tenant, company, window, param1, param2);
+        }).then(function(result){
+            totalCount = result.value;
 
-        if (totalCount === 0) {
-            average = 0
-        } else {
-            average = (totalTime / totalCount);
-        }
+            if (totalCount === 0) {
+                average = 0
+            } else {
+                average = (totalTime / totalCount);
+            }
 
-        reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetAverageTime: Success", true, average);
-        reply.value = average;
-        deferred.resolve(reply);
+            reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetAverageTime: Success", true, average);
+            reply.value = average;
+            deferred.resolve(reply);
 
-    }).catch(function(err){
-        reply.jsonString = messageFormatter.FormatMessage(err, "OnGetAverageTime: Failed", false, 0);
-        reply.value = 0;
-        deferred.resolve(reply);
-    });
+        }).catch(function(err){
+            reply.jsonString = messageFormatter.FormatMessage(err, "OnGetAverageTime: Failed", false, 0);
+            reply.value = 0;
+            deferred.resolve(reply);
+        });
+    }else{
+        onGetTotalTime(tenant, company, window, param1, param2).then(function(result){
+            totalTime = totalTime + result.value;
+            return onGetTotalCount(tenant, company, window, param1, param2);
+        }).then(function(result){
+            totalCount = result.value;
+
+            if (totalCount === 0) {
+                average = 0
+            } else {
+                average = (totalTime / totalCount);
+            }
+
+            reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetAverageTime: Success", true, average);
+            reply.value = average;
+            deferred.resolve(reply);
+
+        }).catch(function(err){
+            reply.jsonString = messageFormatter.FormatMessage(err, "OnGetAverageTime: Failed", false, 0);
+            reply.value = 0;
+            deferred.resolve(reply);
+        });
+    }
+
+
 
     return deferred.promise;
 };
