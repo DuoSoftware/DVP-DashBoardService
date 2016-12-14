@@ -258,6 +258,8 @@ var OnGetTotalNewTicketByUser = function(req,res){
     var company = req.user.company;
     var iss = req.user.iss;
 
+    iss = iss.replace(/@/g, "");
+
     var jsonString;
 
     var url = util.format("http://%s/render?target=summarize(sumSeries(stats.gauges.event.ticket.totalcount.%d.%d.user_%s.NEWTICKET),\"1d\",\"max\",true)&from=-%dd&format=json", statsDIp, tenant, company, iss, req.params.duration);
@@ -283,7 +285,7 @@ var OnGetTotalClosedTicketByUser = function(req,res){
     var tenant = req.user.tenant;
     var company = req.user.company;
     var iss = req.user.iss;
-
+    iss = iss.replace(/@/g, "");
     var jsonString;
 
     var url = util.format("http://%s/render?target=summarize(sumSeries(stats.gauges.event.ticket.totalcount.%d.%d.user_%s.CLOSEDTICKET),\"1d\",\"max\",true)&from=-%dd&format=json", statsDIp, tenant, company, iss, req.params.duration);
@@ -309,7 +311,7 @@ var OnGetDiffClosedVsNewByUser = function(req,res){
     var tenant = req.user.tenant;
     var company = req.user.company;
     var iss = req.user.iss;
-
+    iss = iss.replace(/@/g, "");
     var jsonString;
 
     var url = util.format("http://%s/render?target=summarize(diffSeries(stats.gauges.event.ticket.totalcount.%d.%d.user_%s.NEWTICKET,stats.gauges.event.ticket.totalcount.%d.%d.user_%s.CLOSEDTICKET),\"1d\",\"max\",true)&from=-%dd&format=json", statsDIp, tenant, company, iss, tenant, company, iss, req.params.duration);
