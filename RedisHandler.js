@@ -24,16 +24,16 @@ client.on("connect", function (err) {
 
 //--------------------Ards Redis Client-------------------------------------
 
-var ardsClient = redis.createClient(config.Redis.port, config.Redis.ip);
-ardsClient.auth(config.Redis.password);
-ardsClient.select(config.Redis.ardsRedisDB, redis.print);
+var ardsClient = redis.createClient(config.ArdsRedis.port, config.ArdsRedis.ip);
+ardsClient.auth(config.ArdsRedis.password);
+ardsClient.select(config.ArdsRedis.ardsRedisDB, redis.print);
 //client.select(config.Redis.redisdb, function () { /* ... */ });
 ardsClient.on("error", function (err) {
     logger.error('ARDS Redis connection error :: %s', err);
 });
 
 ardsClient.on("connect", function (err) {
-    ardsClient.select(config.Redis.ardsRedisDB, redis.print);
+    ardsClient.select(config.ArdsRedis.ardsRedisDB, redis.print);
 });
 
 
