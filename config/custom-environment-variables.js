@@ -5,11 +5,20 @@
 module.exports = {
     "Redis":
     {
+        "ip": "SYS_DASHBOARD_REDIS_HOST",
+        "port": "SYS_DASHBOARD_REDIS_PORT",
+        "user": "SYS_DASHBOARD_REDIS_USER",
+        "password": "SYS_DASHBOARD_REDIS_PASSWORD",
+        "redisDB":"SYS_REDIS_DB_DASHBOARD"
+
+    },
+
+    "ArdsRedis":
+    {
         "ip": "SYS_REDIS_HOST",
         "port": "SYS_REDIS_PORT",
         "user": "SYS_REDIS_USER",
         "password": "SYS_REDIS_PASSWORD",
-        "redisDB":"SYS_REDIS_DB_DASHBOARD",
         "ardsRedisDB": "SYS_REDIS_DB_ARDS"
 
     },
