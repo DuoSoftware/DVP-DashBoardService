@@ -43,11 +43,11 @@ var scanKeys = function(index, pattern, matchingKeys, callback){
             logger.error('Redis searchKeys error :: %s', err);
             callback(err, matchingKeys);
         } else {
-            logger.info('Redis searchKeys success :: replies:%s', replies.length);
 
             if(replies.length > 1) {
                 var match = matchingKeys.concat(replies[1]);
                 if (replies[0] === "0") {
+
                     callback(null, match);
                 } else {
                     scanKeys(replies[0], pattern, match, function (err, res) {
