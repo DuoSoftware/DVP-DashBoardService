@@ -37,6 +37,30 @@ ardsClient.on("connect", function (err) {
 });
 
 
+var scanKeys = function(index, pattern, matchingKeys, callback){
+    client.scan(index, 'MATCH', pattern, function (err, replies) {
+        if (err) {
+            logger.error('Redis searchKeys error :: %s', err);
+            callback(err, matchingKeys);
+        } else {
+            logger.info('Redis searchKeys success :: replies:%s', replies.length);
+
+            if(replies.length > 1) {
+                var match = matchingKeys.concat(replies[1]);
+                if (replies[0] === "0") {
+                    callback(null, match);
+                } else {
+                    scanKeys(replies[0], pattern, match, function (err, res) {
+                        callback(err, res);
+                    });
+                }
+            }else{
+                callback(null, matchingKeys);
+            }
+        }
+    });
+};
+
 
 var GetHashValue = function (keys, field) {
     var e = new eventEmitter();
@@ -65,31 +89,25 @@ var GetHashValue = function (keys, field) {
 var searchObjects = function(searchPattern, callback){
     var result = [];
 
-    getKeyCounts(function(err, keyCount){
-        if(err){
+    scanKeys(0, searchPattern, [], function(err, replies){
+        if (err) {
+            logger.error('Redis searchKeys error :: %s', err);
             callback(err, result);
-        }else{
-            client.scan(0, 'MATCH', searchPattern, 'count', keyCount, function (err, replies) {
-                if (err) {
-                    logger.error('Redis searchKeys error :: %s', err);
-                    callback(err, result);
-                } else {
-                    logger.info('Redis searchKeys success :: replies:%s', replies.length);
-                    if (replies && replies.length > 0 && replies[1] && replies[1].length > 0) {
-                        client.mget(replies[1], function(err, objs){
-                            if(err){
-                                logger.error('Redis searchKeys (mget) error :: %s', err);
-                                callback(err, result);
-                            }else{
-                                logger.info('Redis searchKeys (mget) success :: %s', objs);
-                                callback(err, objs);
-                            }
-                        });
-                    } else {
-                        callback(null, result);
+        } else {
+            logger.info('Redis searchKeys success :: replies:%s', replies.length);
+            if (replies && replies.length > 0) {
+                client.mget(replies, function(err, objs){
+                    if(err){
+                        logger.error('Redis searchKeys (mget) error :: %s', err);
+                        callback(err, result);
+                    }else{
+                        logger.info('Redis searchKeys (mget) success :: %s', objs);
+                        callback(err, objs);
                     }
-                }
-            });
+                });
+            } else {
+                callback(null, result);
+            }
         }
     });
 };
@@ -97,31 +115,25 @@ var searchObjects = function(searchPattern, callback){
 var searchHashes = function(searchPattern, hashField, callback){
     var result = [];
 
-    getKeyCounts(function(err, keyCount){
-        if(err){
+    scanKeys(0, searchPattern, [], function(err, replies){
+        if (err) {
+            logger.error('Redis searchKeys error :: %s', err);
             callback(err, result);
-        }else{
-            client.scan(0, 'MATCH', searchPattern, 'count', keyCount, function (err, replies) {
-                if (err) {
-                    logger.error('Redis searchKeys error :: %s', err);
-                    callback(err, result);
-                } else {
-                    logger.info('Redis searchKeys success :: replies:%s', replies.length);
-                    if (replies && replies.length > 0 && replies[1] && replies[1].length > 0) {
-                        var ghv = GetHashValue(replies[1], hashField);
+        } else {
+            logger.info('Redis searchKeys success :: replies:%s', replies.length);
+            if (replies && replies.length > 0) {
+                var ghv = GetHashValue(replies, hashField);
 
-                        ghv.on('result', function (hValue) {
-                            result.push(hValue);
-                        });
+                ghv.on('result', function (hValue) {
+                    result.push(hValue);
+                });
 
-                        ghv.on('end', function () {
-                            callback(null, result);
-                        });
-                    } else {
-                        callback(null, result);
-                    }
-                }
-            });
+                ghv.on('end', function () {
+                    callback(null, result);
+                });
+            } else {
+                callback(null, result);
+            }
         }
     });
 };
@@ -129,23 +141,17 @@ var searchHashes = function(searchPattern, hashField, callback){
 var searchKeys = function(searchPattern, callback) {
     var result = [];
 
-    getKeyCounts(function (err, keyCount) {
+    scanKeys(0, searchPattern, [], function(err, replies){
         if (err) {
+            logger.error('Redis searchKeys error :: %s', err);
             callback(err, result);
         } else {
-            client.scan(0, 'MATCH', searchPattern, 'count', keyCount, function (err, replies) {
-                if (err) {
-                    logger.error('Redis searchKeys error :: %s', err);
-                    callback(err, result);
-                } else {
-                    logger.info('Redis searchKeys success :: replies:%s', replies.length);
-                    if (replies && replies.length > 0 && replies[1] && replies[1].length > 0) {
-                        callback(null, replies[1]);
-                    } else {
-                        callback(null, result);
-                    }
-                }
-            });
+            logger.info('Redis searchKeys success :: replies:%s', replies.length);
+            if (replies && replies.length > 0) {
+                callback(null, replies);
+            } else {
+                callback(null, result);
+            }
         }
     });
 };
@@ -173,6 +179,8 @@ var getKeyCounts = function(callback){
         }
     });
 };
+
+
 
 module.exports.SearchObjects = searchObjects;
 module.exports.SearchHashes = searchHashes;
