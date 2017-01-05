@@ -3,10 +3,13 @@
  */
 
 var redis = require('redis');
+var bluebird = require('bluebird');
 var util = require('util');
 var config = require('config');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var eventEmitter = require('events').EventEmitter;
+bluebird.promisifyAll(redis.RedisClient.prototype);
+bluebird.promisifyAll(redis.Multi.prototype);
 
 //--------------------Dashboards Redis Client-------------------------------------
 var client = redis.createClient(config.Redis.port, config.Redis.ip);
@@ -36,8 +39,25 @@ ardsClient.on("connect", function (err) {
     ardsClient.select(config.ArdsRedis.ardsRedisDB, redis.print);
 });
 
+function scanAsync(index, pattern, matchingKeys){
 
-var scanKeys = function(index, pattern, matchingKeys, callback){
+    return client.scanAsync(index, 'MATCH', pattern).then(
+        function (replies) {
+            if(replies.length > 1) {
+                var match = matchingKeys.concat(replies[1]);
+                if (replies[0] === "0") {
+                    return match;
+                } else {
+                    return scanAsync(replies[0], pattern, match)
+                }
+            }else{
+                return matchingKeys;
+            }
+
+        });
+}
+
+/*var scanKeys = function(index, pattern, matchingKeys, callback){
     client.scan(index, 'MATCH', pattern, function (err, replies) {
         if (err) {
             logger.error('Redis searchKeys error :: %s', err);
@@ -59,7 +79,7 @@ var scanKeys = function(index, pattern, matchingKeys, callback){
             }
         }
     });
-};
+};*/
 
 
 var GetHashValue = function (keys, field) {
@@ -89,11 +109,12 @@ var GetHashValue = function (keys, field) {
 var searchObjects = function(searchPattern, callback){
     var result = [];
 
-    scanKeys(0, searchPattern, [], function(err, replies){
-        if (err) {
-            logger.error('Redis searchKeys error :: %s', err);
-            callback(err, result);
-        } else {
+    var sPromise = scanAsync(0, searchPattern, []);
+    sPromise.then(function(replies){
+        //if (err) {
+        //    logger.error('Redis searchKeys error :: %s', err);
+        //    callback(err, result);
+        //} else {
             logger.info('Redis searchKeys success :: replies:%s', replies.length);
             if (replies && replies.length > 0) {
                 client.mget(replies, function(err, objs){
@@ -108,18 +129,19 @@ var searchObjects = function(searchPattern, callback){
             } else {
                 callback(null, result);
             }
-        }
+        //}
     });
 };
 
 var searchHashes = function(searchPattern, hashField, callback){
     var result = [];
 
-    scanKeys(0, searchPattern, [], function(err, replies){
-        if (err) {
-            logger.error('Redis searchKeys error :: %s', err);
-            callback(err, result);
-        } else {
+    var sPromise = scanAsync(0, searchPattern, []);
+    sPromise.then(function(replies){
+        //if (err) {
+        //    logger.error('Redis searchKeys error :: %s', err);
+        //    callback(err, result);
+        //} else {
             logger.info('Redis searchKeys success :: replies:%s', replies.length);
             if (replies && replies.length > 0) {
                 var ghv = GetHashValue(replies, hashField);
@@ -134,25 +156,26 @@ var searchHashes = function(searchPattern, hashField, callback){
             } else {
                 callback(null, result);
             }
-        }
+        //}
     });
 };
 
 var searchKeys = function(searchPattern, callback) {
     var result = [];
 
-    scanKeys(0, searchPattern, [], function(err, replies){
-        if (err) {
-            logger.error('Redis searchKeys error :: %s', err);
-            callback(err, result);
-        } else {
+    var sPromise = scanAsync(0, searchPattern, []);
+    sPromise.then(function(replies){
+        //if (err) {
+        //    logger.error('Redis searchKeys error :: %s', err);
+        //    callback(err, result);
+        //} else {
             logger.info('Redis searchKeys success :: replies:%s', replies.length);
             if (replies && replies.length > 0) {
                 callback(null, replies);
             } else {
                 callback(null, result);
             }
-        }
+        //}
     });
 };
 
