@@ -82,7 +82,7 @@ function scanAsync(index, pattern, matchingKeys){
 };*/
 
 
-var GetHashValue = function (keys, field) {
+var GetHashValues = function (keys, field) {
     var e = new eventEmitter();
     var count = 0;
     for (var i=0; i< keys.length; i++) {
@@ -104,6 +104,30 @@ var GetHashValue = function (keys, field) {
         });
     }
     return (e);
+};
+
+var getHashValue = function (key, field) {
+    client.hget(key, field, function (err, hValue) {
+        if (err) {
+            logger.error('Redis getHashValue error :: %s', err);
+            callback(err, undefined);
+        } else {
+            logger.info('Redis getHashValue success :: %s', hValue);
+            callback(undefined, hValue);
+        }
+    });
+};
+
+var getObject = function(key, callback){
+    client.get(key, function(err, obj){
+        if(err){
+            logger.error('Redis getObject (get) error :: %s', err);
+            callback(err, undefined);
+        }else{
+            logger.info('Redis getObject (get) success :: %s', obj);
+            callback(err, obj);
+        }
+    });
 };
 
 var searchObjects = function(searchPattern, callback){
@@ -144,7 +168,7 @@ var searchHashes = function(searchPattern, hashField, callback){
         //} else {
             logger.info('Redis searchKeys success :: replies:%s', replies.length);
             if (replies && replies.length > 0) {
-                var ghv = GetHashValue(replies, hashField);
+                var ghv = GetHashValues(replies, hashField);
 
                 ghv.on('result', function (hValue) {
                     result.push(hValue);
@@ -204,7 +228,8 @@ var getKeyCounts = function(callback){
 };
 
 
-
+module.exports.GetObject = getObject;
+module.exports.GetHashValue = getHashValue;
 module.exports.SearchObjects = searchObjects;
 module.exports.SearchHashes = searchHashes;
 module.exports.SearchKeys = searchKeys;
