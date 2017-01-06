@@ -3,13 +3,12 @@
  */
 
 var redis = require('redis');
-var bluebird = require('bluebird');
 var util = require('util');
 var config = require('config');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var eventEmitter = require('events').EventEmitter;
-bluebird.promisifyAll(redis.RedisClient.prototype);
-bluebird.promisifyAll(redis.Multi.prototype);
+
+require("redis-scanrx")(redis);
 
 //--------------------Dashboards Redis Client-------------------------------------
 var client = redis.createClient(config.Redis.port, config.Redis.ip);
@@ -22,6 +21,7 @@ client.on("error", function (err) {
 
 client.on("connect", function (err) {
     client.select(config.Redis.redisDB, redis.print);
+
 });
 
 
@@ -38,6 +38,8 @@ ardsClient.on("error", function (err) {
 ardsClient.on("connect", function (err) {
     ardsClient.select(config.ArdsRedis.ardsRedisDB, redis.print);
 });
+
+
 
 function scanAsync(index, pattern, matchingKeys){
 
@@ -133,7 +135,8 @@ var getObject = function(key, callback){
 var searchObjects = function(searchPattern, callback){
     var result = [];
 
-    var sPromise = scanAsync(0, searchPattern, []);
+    //var sPromise = scanAsync(0, searchPattern, []);
+    var sPromise = client.scanrx(searchPattern).toArray().toPromise();
     sPromise.then(function(replies){
         //if (err) {
         //    logger.error('Redis searchKeys error :: %s', err);
@@ -160,7 +163,8 @@ var searchObjects = function(searchPattern, callback){
 var searchHashes = function(searchPattern, hashField, callback){
     var result = [];
 
-    var sPromise = scanAsync(0, searchPattern, []);
+    //var sPromise = scanAsync(0, searchPattern, []);
+    var sPromise = client.scanrx(searchPattern).toArray().toPromise();
     sPromise.then(function(replies){
         //if (err) {
         //    logger.error('Redis searchKeys error :: %s', err);
@@ -187,7 +191,8 @@ var searchHashes = function(searchPattern, hashField, callback){
 var searchKeys = function(searchPattern, callback) {
     var result = [];
 
-    var sPromise = scanAsync(0, searchPattern, []);
+    //var sPromise = scanAsync(0, searchPattern, []);
+    var sPromise = client.scanrx(searchPattern).toArray().toPromise();
     sPromise.then(function(replies){
         //if (err) {
         //    logger.error('Redis searchKeys error :: %s', err);
