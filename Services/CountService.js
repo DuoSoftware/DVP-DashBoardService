@@ -162,21 +162,34 @@ var onGetCurrentCount = function(tenant, company, window, param1, param2){
     logger.info("DVP-DashboardService.OnGetCurrentCount Internal method ");
 
     var reply = {};
+    var currentCountSearch;
 
-    var currentCountSearch = util.format('CONCURRENT:%s:%s:%s:%s:%s', tenant, company, window, param1, param2);
+    if(param1 && param2) {
+        if(param1 !== '*' && param2 !== '*') {
+            currentCountSearch = util.format('CONCURRENT:%s:%s:%s:%s:%s', tenant, company, window, param1, param2);
+        }else if(param1 !== '*'){
+            currentCountSearch = util.format('CONCURRENTWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
+        }else{
+            currentCountSearch = util.format('CONCURRENTWOPARAMS:%s:%s:%s', tenant, company, window);
+        }
+    }else if(param1){
+        if(param1 !== '*'){
+            currentCountSearch = util.format('CONCURRENTWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
+        }else{
+            currentCountSearch = util.format('CONCURRENTWOPARAMS:%s:%s:%s', tenant, company, window);
+        }
+    }else{
+        currentCountSearch = util.format('CONCURRENTWOPARAMS:%s:%s:%s', tenant, company, window);
+    }
 
-    redisHandler.SearchObjects(currentCountSearch, function(err, result){
+    redisHandler.GetObject(currentCountSearch, function(err, result){
         if(err){
-            reply.jsonString = messageFormatter.FormatMessage(err, "OnGetCurrentCount: SearchKeys Failed", false, 0);
+            reply.jsonString = messageFormatter.FormatMessage(err, "OnGetCurrentCount: Get Failed", false, 0);
             reply.value = 0;
             deferred.resolve(reply);
         }else{
-            if(result && result.length > 0){
-                var tempTotal = 0;
-                for(var i = 0; i< result.length; i++){
-                    var value = parseInt(result[i]);
-                    tempTotal = tempTotal+ value;
-                }
+            if(result){
+                var tempTotal = parseInt(result);
 
                 if (tempTotal < 0) {
                     tempTotal = 0;
@@ -193,6 +206,34 @@ var onGetCurrentCount = function(tenant, company, window, param1, param2){
         }
     });
 
+    //redisHandler.SearchObjects(currentCountSearch, function(err, result){
+    //    if(err){
+    //        reply.jsonString = messageFormatter.FormatMessage(err, "OnGetCurrentCount: SearchKeys Failed", false, 0);
+    //        reply.value = 0;
+    //        deferred.resolve(reply);
+    //    }else{
+    //        if(result && result.length > 0){
+    //            var tempTotal = 0;
+    //            for(var i = 0; i< result.length; i++){
+    //                var value = parseInt(result[i]);
+    //                tempTotal = tempTotal+ value;
+    //            }
+    //
+    //            if (tempTotal < 0) {
+    //                tempTotal = 0;
+    //            }
+    //
+    //            reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetCurrentCount: Success", true, tempTotal);
+    //            reply.value = tempTotal;
+    //            deferred.resolve(reply);
+    //        }else{
+    //            reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetCurrentCount: No Keys Found", false, 0);
+    //            reply.value = 0;
+    //            deferred.resolve(reply);
+    //        }
+    //    }
+    //});
+
     return deferred.promise;
 };
 
@@ -202,21 +243,34 @@ var onGetTotalCount = function(tenant, company, window, param1, param2){
     logger.info("DVP-DashboardService.OnGetTotalCount Internal method ");
 
     var reply = {};
+    var totalCountSearch;
 
-    var totalCountSearch = util.format('TOTALCOUNT:%s:%s:%s:%s:%s', tenant, company, window, param1, param2);
+    if(param1 && param2) {
+        if(param1 !== '*' && param2 !== '*') {
+            totalCountSearch = util.format('TOTALCOUNT:%s:%s:%s:%s:%s', tenant, company, window, param1, param2);
+        }else if(param1 !== '*'){
+            totalCountSearch = util.format('TOTALCOUNTWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
+        }else{
+            totalCountSearch = util.format('TOTALCOUNTWOPARAMS:%s:%s:%s', tenant, company, window);
+        }
+    }else if(param1){
+        if(param1 !== '*'){
+            totalCountSearch = util.format('TOTALCOUNTWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
+        }else{
+            totalCountSearch = util.format('TOTALCOUNTWOPARAMS:%s:%s:%s', tenant, company, window);
+        }
+    }else{
+        totalCountSearch = util.format('TOTALCOUNTWOPARAMS:%s:%s:%s', tenant, company, window);
+    }
 
-    redisHandler.SearchObjects(totalCountSearch, function(err, result){
+    redisHandler.GetObject(totalCountSearch, function(err, result){
         if(err){
-            reply.jsonString = messageFormatter.FormatMessage(err, "OnGetTotalCount: SearchKeys Failed", false, 0);
+            reply.jsonString = messageFormatter.FormatMessage(err, "OnGetTotalCount: Get Failed", false, 0);
             reply.value = 0;
             deferred.resolve(reply);
         }else{
-            if(result && result.length > 0){
-                var tempTotal = 0;
-                for(var i = 0; i< result.length; i++){
-                    var value = parseInt(result[i]);
-                    tempTotal = tempTotal+ value;
-                }
+            if(result){
+                var tempTotal = parseInt(result);
 
                 if (tempTotal < 0) {
                     tempTotal = 0;
@@ -233,6 +287,34 @@ var onGetTotalCount = function(tenant, company, window, param1, param2){
         }
     });
 
+    //redisHandler.SearchObjects(totalCountSearch, function(err, result){
+    //    if(err){
+    //        reply.jsonString = messageFormatter.FormatMessage(err, "OnGetTotalCount: SearchKeys Failed", false, 0);
+    //        reply.value = 0;
+    //        deferred.resolve(reply);
+    //    }else{
+    //        if(result && result.length > 0){
+    //            var tempTotal = 0;
+    //            for(var i = 0; i< result.length; i++){
+    //                var value = parseInt(result[i]);
+    //                tempTotal = tempTotal+ value;
+    //            }
+    //
+    //            if (tempTotal < 0) {
+    //                tempTotal = 0;
+    //            }
+    //
+    //            reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetTotalCount: Success", true, tempTotal);
+    //            reply.value = tempTotal;
+    //            deferred.resolve(reply);
+    //        }else{
+    //            reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetTotalCount: No Keys Found", false, 0);
+    //            reply.value = 0;
+    //            deferred.resolve(reply);
+    //        }
+    //    }
+    //});
+
     return deferred.promise;
 };
 
@@ -242,21 +324,34 @@ var onGetTotalTime = function(tenant, company, window, param1, param2){
     logger.info("DVP-DashboardService.OnGetTotalTime Internal method ");
 
     var reply = {};
+    var totalTimeSearch;
 
-    var totalTimeSearch = util.format('TOTALTIME:%s:%s:%s:%s:%s', tenant, company, window, param1, param2);
+    if(param1 && param2) {
+        if(param1 !== '*' && param2 !== '*') {
+            totalTimeSearch = util.format('TOTALTIME:%s:%s:%s:%s:%s', tenant, company, window, param1, param2);
+        }else if(param1 !== '*'){
+            totalTimeSearch = util.format('TOTALTIMEWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
+        }else{
+            totalTimeSearch = util.format('TOTALTIMEWOPARAMS:%s:%s:%s', tenant, company, window);
+        }
+    }else if(param1){
+        if(param1 !== '*'){
+            totalTimeSearch = util.format('TOTALTIMEWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
+        }else{
+            totalTimeSearch = util.format('TOTALTIMEWOPARAMS:%s:%s:%s', tenant, company, window);
+        }
+    }else{
+        totalTimeSearch = util.format('TOTALTIMEWOPARAMS:%s:%s:%s', tenant, company, window);
+    }
 
-    redisHandler.SearchObjects(totalTimeSearch, function(err, result){
+    redisHandler.GetObject(totalTimeSearch, function(err, result){
         if(err){
-            reply.jsonString = messageFormatter.FormatMessage(err, "OnGetTotalTime: SearchKeys Failed", false, 0);
+            reply.jsonString = messageFormatter.FormatMessage(err, "OnGetTotalTime: Get Failed", false, 0);
             reply.value = 0;
             deferred.resolve(reply);
         }else{
-            if(result && result.length > 0){
-                var tempTotal = 0;
-                for(var i = 0; i< result.length; i++){
-                    var value = parseInt(result[i]);
-                    tempTotal = tempTotal+ value;
-                }
+            if(result){
+                var tempTotal = parseInt(result);
 
                 if (tempTotal < 0) {
                     tempTotal = 0;
@@ -272,6 +367,35 @@ var onGetTotalTime = function(tenant, company, window, param1, param2){
             }
         }
     });
+
+
+    //redisHandler.SearchObjects(totalTimeSearch, function(err, result){
+    //    if(err){
+    //        reply.jsonString = messageFormatter.FormatMessage(err, "OnGetTotalTime: SearchKeys Failed", false, 0);
+    //        reply.value = 0;
+    //        deferred.resolve(reply);
+    //    }else{
+    //        if(result && result.length > 0){
+    //            var tempTotal = 0;
+    //            for(var i = 0; i< result.length; i++){
+    //                var value = parseInt(result[i]);
+    //                tempTotal = tempTotal+ value;
+    //            }
+    //
+    //            if (tempTotal < 0) {
+    //                tempTotal = 0;
+    //            }
+    //
+    //            reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetTotalTime: Success", true, tempTotal);
+    //            reply.value = tempTotal;
+    //            deferred.resolve(reply);
+    //        }else{
+    //            reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetTotalTime: No Keys Found", false, 0);
+    //            reply.value = 0;
+    //            deferred.resolve(reply);
+    //        }
+    //    }
+    //});
 
     return deferred.promise;
 };
