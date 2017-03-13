@@ -169,12 +169,20 @@ var onGetCurrentCount = function(tenant, company, window, param1, param2){
             currentCountSearch = util.format('CONCURRENT:%s:%s:%s:%s:%s', tenant, company, window, param1, param2);
         }else if(param1 !== '*'){
             currentCountSearch = util.format('CONCURRENTWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
+        }else if(param2 !== '*'){
+            currentCountSearch = util.format('CONCURRENTWLPARAM:%s:%s:%s:%s', tenant, company, window, param2);
         }else{
             currentCountSearch = util.format('CONCURRENTWOPARAMS:%s:%s:%s', tenant, company, window);
         }
     }else if(param1){
         if(param1 !== '*'){
             currentCountSearch = util.format('CONCURRENTWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
+        }else{
+            currentCountSearch = util.format('CONCURRENTWOPARAMS:%s:%s:%s', tenant, company, window);
+        }
+    }else if(param2){
+        if(param2 !== '*'){
+            currentCountSearch = util.format('CONCURRENTWLPARAM:%s:%s:%s:%s', tenant, company, window, param2);
         }else{
             currentCountSearch = util.format('CONCURRENTWOPARAMS:%s:%s:%s', tenant, company, window);
         }
@@ -250,12 +258,20 @@ var onGetTotalCount = function(tenant, company, window, param1, param2){
             totalCountSearch = util.format('TOTALCOUNT:%s:%s:%s:%s:%s', tenant, company, window, param1, param2);
         }else if(param1 !== '*'){
             totalCountSearch = util.format('TOTALCOUNTWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
+        }else if(param2 !== '*'){
+            totalCountSearch = util.format('TOTALCOUNTWLPARAM:%s:%s:%s:%s', tenant, company, window, param2);
         }else{
             totalCountSearch = util.format('TOTALCOUNTWOPARAMS:%s:%s:%s', tenant, company, window);
         }
     }else if(param1){
         if(param1 !== '*'){
             totalCountSearch = util.format('TOTALCOUNTWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
+        }else{
+            totalCountSearch = util.format('TOTALCOUNTWOPARAMS:%s:%s:%s', tenant, company, window);
+        }
+    }else if(param2){
+        if(param2 !== '*'){
+            totalCountSearch = util.format('TOTALCOUNTWLPARAM:%s:%s:%s:%s', tenant, company, window, param2);
         }else{
             totalCountSearch = util.format('TOTALCOUNTWOPARAMS:%s:%s:%s', tenant, company, window);
         }
@@ -331,12 +347,20 @@ var onGetTotalTime = function(tenant, company, window, param1, param2){
             totalTimeSearch = util.format('TOTALTIME:%s:%s:%s:%s:%s', tenant, company, window, param1, param2);
         }else if(param1 !== '*'){
             totalTimeSearch = util.format('TOTALTIMEWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
+        }else if(param2 !== '*'){
+            totalTimeSearch = util.format('TOTALTIMEWLPARAM:%s:%s:%s:%s', tenant, company, window, param2);
         }else{
             totalTimeSearch = util.format('TOTALTIMEWOPARAMS:%s:%s:%s', tenant, company, window);
         }
     }else if(param1){
         if(param1 !== '*'){
             totalTimeSearch = util.format('TOTALTIMEWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
+        }else{
+            totalTimeSearch = util.format('TOTALTIMEWOPARAMS:%s:%s:%s', tenant, company, window);
+        }
+    }else if(param2){
+        if(param2 !== '*'){
+            totalTimeSearch = util.format('TOTALTIMEWLPARAM:%s:%s:%s:%s', tenant, company, window, param2);
         }else{
             totalTimeSearch = util.format('TOTALTIMEWOPARAMS:%s:%s:%s', tenant, company, window);
         }
@@ -400,6 +424,37 @@ var onGetTotalTime = function(tenant, company, window, param1, param2){
     return deferred.promise;
 };
 
+var onGetTotalTimeWithCurrentSessions = function(tenant, company, window, param1, param2){
+    var deferred = Q.defer();
+
+    logger.info("DVP-DashboardService.onGetTotalTimeWithCurrentSessions Internal method ");
+
+    var reply = {};
+
+    var totalTime = 0;
+
+    onGetCurrentTotalTime(tenant, company, window, param1, param2).then(function(result){
+        totalTime = totalTime + result.value;
+        return onGetTotalTime(tenant, company, window, param1, param2);
+    }).then(function(result){
+        totalTime = totalTime + result.value;
+
+        reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetTotalTimeWithCurrentSessions: Success", true, totalTime);
+        reply.value = totalTime;
+        deferred.resolve(reply);
+
+    }).catch(function(err){
+        reply.jsonString = messageFormatter.FormatMessage(err, "OnGetTotalTimeWithCurrentSessions: Failed", false, 0);
+        reply.value = 0;
+        deferred.resolve(reply);
+    });
+
+
+
+
+    return deferred.promise;
+};
+
 var onGetCurrentTotalTime = function(tenant, company, window, param1, param2){
     var deferred = Q.defer();
 
@@ -440,6 +495,40 @@ var onGetCurrentTotalTime = function(tenant, company, window, param1, param2){
     return deferred.promise;
 };
 
+var onGetTotalKeyCount = function(tenant, company, window, param1, param2){
+    var deferred = Q.defer();
+
+    logger.info("DVP-DashboardService.OnGetTotalKeyCount Internal method ");
+
+    var reply = {};
+
+    var totalKeyCountSearch = util.format('TOTALCOUNT:%s:%s:%s:%s:%s', tenant, company, window, param1, param2);
+
+    redisHandler.SearchKeys(totalKeyCountSearch, function(err, result){
+        if(err){
+            reply.jsonString = messageFormatter.FormatMessage(err, "OnGetTotalKeyCount: SearchKeys Failed", false, 0);
+            reply.value = 0;
+            deferred.resolve(reply);
+        }else{
+            if(result && result.length > 0){
+
+                reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetCurrentMaxTime: Success", true, result.length);
+                reply.value = result.length;
+                deferred.resolve(reply);
+
+            }else{
+
+                reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetCurrentMaxTime: No Keys Found", false, 0);
+                reply.value = 0;
+                deferred.resolve(reply);
+
+            }
+        }
+    });
+
+    return deferred.promise;
+};
+
 var onGetAverageTime = function(tenant, company, window, param1, param2){
     var deferred = Q.defer();
 
@@ -451,54 +540,151 @@ var onGetAverageTime = function(tenant, company, window, param1, param2){
     var totalCount = 0;
     var average = 0;
 
-    if(config.ServiceConfig.addCurrentSessions){
-        onGetCurrentTotalTime(tenant, company, window, param1, param2).then(function(result){
-            totalTime = totalTime + result.value;
-            return onGetTotalTime(tenant, company, window, param1, param2);
-        }).then(function(result){
-            totalTime = totalTime + result.value;
-            return onGetTotalCount(tenant, company, window, param1, param2);
-        }).then(function(result){
-            totalCount = result.value;
 
-            if (totalCount === 0) {
-                average = 0
-            } else {
-                average = (totalTime / totalCount);
-            }
+    onGetTotalTime(tenant, company, window, param1, param2).then(function(result){
+        totalTime = totalTime + result.value;
+        return onGetTotalCount(tenant, company, window, param1, param2);
+    }).then(function(result){
+        totalCount = result.value;
 
-            reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetAverageTime: Success", true, average);
-            reply.value = average;
-            deferred.resolve(reply);
+        if (totalCount === 0) {
+            average = 0
+        } else {
+            average = (totalTime / totalCount);
+        }
 
-        }).catch(function(err){
-            reply.jsonString = messageFormatter.FormatMessage(err, "OnGetAverageTime: Failed", false, 0);
-            reply.value = 0;
-            deferred.resolve(reply);
-        });
-    }else{
-        onGetTotalTime(tenant, company, window, param1, param2).then(function(result){
-            totalTime = totalTime + result.value;
-            return onGetTotalCount(tenant, company, window, param1, param2);
-        }).then(function(result){
-            totalCount = result.value;
+        reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetAverageTime: Success", true, average);
+        reply.value = average;
+        deferred.resolve(reply);
 
-            if (totalCount === 0) {
-                average = 0
-            } else {
-                average = (totalTime / totalCount);
-            }
+    }).catch(function(err){
+        reply.jsonString = messageFormatter.FormatMessage(err, "OnGetAverageTime: Failed", false, 0);
+        reply.value = 0;
+        deferred.resolve(reply);
+    });
 
-            reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetAverageTime: Success", true, average);
-            reply.value = average;
-            deferred.resolve(reply);
 
-        }).catch(function(err){
-            reply.jsonString = messageFormatter.FormatMessage(err, "OnGetAverageTime: Failed", false, 0);
-            reply.value = 0;
-            deferred.resolve(reply);
-        });
-    }
+
+    return deferred.promise;
+};
+
+var onGetAverageCountPerKey = function(tenant, company, window, param1, param2){
+    var deferred = Q.defer();
+
+    logger.info("DVP-DashboardService.OnGetAverageCountPerKey Internal method ");
+
+    var reply = {};
+
+    var totalCount = 0;
+    var totalKeys = 0;
+    var average = 0;
+
+
+    onGetTotalCount(tenant, company, window, param1, param2).then(function(result){
+        totalCount = totalCount + result.value;
+        return onGetTotalKeyCount(tenant, company, window, param1, param2);
+    }).then(function(result){
+        totalKeys = result.value;
+
+        if (totalKeys === 0) {
+            average = 0
+        } else {
+            average = (totalCount / totalKeys);
+        }
+
+        reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetAverageCountPerKey: Success", true, average);
+        reply.value = average;
+        deferred.resolve(reply);
+
+    }).catch(function(err){
+        reply.jsonString = messageFormatter.FormatMessage(err, "OnGetAverageCountPerKey: Failed", false, 0);
+        reply.value = 0;
+        deferred.resolve(reply);
+    });
+
+
+
+    return deferred.promise;
+};
+
+var onGetAverageTimeWithCurrentSessions = function(tenant, company, window, param1, param2){
+    var deferred = Q.defer();
+
+    logger.info("DVP-DashboardService.OnGetAverageTime Internal method ");
+
+    var reply = {};
+
+    var totalTime = 0;
+    var totalCount = 0;
+    var average = 0;
+
+    onGetCurrentTotalTime(tenant, company, window, param1, param2).then(function(result){
+        totalTime = totalTime + result.value;
+        return onGetTotalTime(tenant, company, window, param1, param2);
+    }).then(function(result){
+        totalTime = totalTime + result.value;
+        return onGetTotalCount(tenant, company, window, param1, param2);
+    }).then(function(result){
+        totalCount = result.value;
+
+        if (totalCount === 0) {
+            average = 0
+        } else {
+            average = (totalTime / totalCount);
+        }
+
+        reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetAverageTime: Success", true, average);
+        reply.value = average;
+        deferred.resolve(reply);
+
+    }).catch(function(err){
+        reply.jsonString = messageFormatter.FormatMessage(err, "OnGetAverageTime: Failed", false, 0);
+        reply.value = 0;
+        deferred.resolve(reply);
+    });
+
+
+
+
+    return deferred.promise;
+};
+
+var onGetAverageTimePerKeyWithCurrentSessions = function(tenant, company, window, param1, param2){
+    var deferred = Q.defer();
+
+    logger.info("DVP-DashboardService.OnGetAverageTime Internal method ");
+
+    var reply = {};
+
+    var totalTime = 0;
+    var totalCount = 0;
+    var average = 0;
+
+    onGetCurrentTotalTime(tenant, company, window, param1, param2).then(function(result){
+        totalTime = totalTime + result.value;
+        return onGetTotalTime(tenant, company, window, param1, param2);
+    }).then(function(result){
+        totalTime = totalTime + result.value;
+        return onGetTotalKeyCount(tenant, company, window, param1, param2);
+    }).then(function(result){
+        totalCount = result.value;
+
+        if (totalCount === 0) {
+            average = 0
+        } else {
+            average = (totalTime / totalCount);
+        }
+
+        reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetAverageTime: Success", true, average);
+        reply.value = average;
+        deferred.resolve(reply);
+
+    }).catch(function(err){
+        reply.jsonString = messageFormatter.FormatMessage(err, "OnGetAverageTime: Failed", false, 0);
+        reply.value = 0;
+        deferred.resolve(reply);
+    });
+
 
 
 
@@ -535,7 +721,18 @@ var onGetQueueDetails = function(tenant, company){
                 if(queueIdList.length > 0){
 
                     var count = queueIdList.length;
-                    for(var j=0; j< queueIdList.length; j++) {
+                    queueIdList.forEach(function (queueId) {
+                        getQueueDetail(tenant, company, queueId).then(function(queueInfo){
+                            queueDetailList.push(queueInfo);
+
+                            if(queueDetailList.length === count){
+                                reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetQueueDetails: Success", true, queueDetailList);
+                                reply.value = queueDetailList;
+                                deferred.resolve(reply);
+                            }
+                        });
+                    });
+                    /*for(var j=0; j< queueIdList.length; j++) {
                         var queueId = queueIdList[j];
 
                         getQueueDetail(tenant, company, queueId).then(function(queueInfo){
@@ -547,7 +744,7 @@ var onGetQueueDetails = function(tenant, company){
                                 deferred.resolve(reply);
                             }
                         });
-                    }
+                    }*/
                 }else{
                     reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetQueueDetails: No Queues Found", false, queueDetailList);
                     reply.value = queueDetailList;
@@ -666,6 +863,71 @@ var OnGetTotalCount = function(req,res){
 
 };
 
+var OnGetTotalTime = function(req,res){
+    var tenant = req.user.tenant;
+    var company = req.user.company;
+
+    onGetTotalTime(tenant, company, req.params.window, req.params.param1, req.params.param2).then(function(result){
+        res.end(result.jsonString);
+    }).catch(function(err){
+        console.log(err);
+        res.end(messageFormatter.FormatMessage(err, "OnGetTotalTime: Error", false, 0));
+    });
+
+};
+
+var OnGetTotalTimeWithCurrentSessions = function(req,res){
+    var tenant = req.user.tenant;
+    var company = req.user.company;
+
+    onGetTotalTimeWithCurrentSessions(tenant, company, req.params.window, req.params.param1, req.params.param2).then(function(result){
+        res.end(result.jsonString);
+    }).catch(function(err){
+        console.log(err);
+        res.end(messageFormatter.FormatMessage(err, "OnGetTotalTimeWithCurrentSessions: Error", false, 0));
+    });
+
+};
+
+var OnGetAverageTimeWithCurrentSessions = function(req,res){
+    var tenant = req.user.tenant;
+    var company = req.user.company;
+
+    onGetAverageTimeWithCurrentSessions(tenant, company, req.params.window, req.params.param1, req.params.param2).then(function(result){
+        res.end(result.jsonString);
+    }).catch(function(err){
+        console.log(err);
+        res.end(messageFormatter.FormatMessage(err, "OnGetAverageTimeWithCurrentSessions: Error", false, 0));
+    });
+
+};
+
+var OnGetAverageTimePerKeyWithCurrentSessions = function(req,res){
+    var tenant = req.user.tenant;
+    var company = req.user.company;
+
+    onGetAverageTimePerKeyWithCurrentSessions(tenant, company, req.params.window, req.params.param1, req.params.param2).then(function(result){
+        res.end(result.jsonString);
+    }).catch(function(err){
+        console.log(err);
+        res.end(messageFormatter.FormatMessage(err, "OnGetAverageTimeWithCurrentSessions: Error", false, 0));
+    });
+
+};
+
+var OnGetAverageCountPerKey = function(req,res){
+    var tenant = req.user.tenant;
+    var company = req.user.company;
+
+    onGetAverageCountPerKey(tenant, company, req.params.window, req.params.param1, req.params.param2).then(function(result){
+        res.end(result.jsonString);
+    }).catch(function(err){
+        console.log(err);
+        res.end(messageFormatter.FormatMessage(err, "OnGetAverageCountPerKey: Error", false, 0));
+    });
+
+};
+
 
 module.exports.OnGetMaxTime = OnGetMaxTime;
 module.exports.OnGetCurrentMaxTime = OnGetCurrentMaxTime;
@@ -674,3 +936,8 @@ module.exports.OnGetAverageTime = OnGetAverageTime;
 module.exports.OnGetQueueDetails = OnGetQueueDetails;
 module.exports.OnGetSingleQueueDetails = OnGetSingleQueueDetails;
 module.exports.OnGetTotalCount = OnGetTotalCount;
+module.exports.OnGetTotalTimeWithCurrentSessions = OnGetTotalTimeWithCurrentSessions;
+module.exports.OnGetAverageTimeWithCurrentSessions = OnGetAverageTimeWithCurrentSessions;
+module.exports.OnGetTotalTime = OnGetTotalTime;
+module.exports.OnGetAverageTimePerKeyWithCurrentSessions = OnGetAverageTimePerKeyWithCurrentSessions;
+module.exports.OnGetAverageCountPerKey = OnGetAverageCountPerKey;

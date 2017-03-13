@@ -38,6 +38,11 @@ server.get('/DashboardEvent/AverageTime/:window/:param1/:param2', authorization(
 server.get('/DashboardEvent/QueueDetails', authorization({resource:"dashboardevent", action:"read"}), countService.OnGetQueueDetails);
 server.get('/DashboardEvent/QueueSingleDetail/:queueId', authorization({resource:"dashboardevent", action:"read"}), countService.OnGetSingleQueueDetails);
 server.get('/DashboardEvent/TotalCount/:window/:param1/:param2', authorization({resource:"dashboardevent", action:"read"}), countService.OnGetTotalCount);
+server.get('/DashboardEvent/TotalTimeWithCurrentSessions/:window/:param1/:param2', authorization({resource:"dashboardevent", action:"read"}), countService.OnGetTotalTimeWithCurrentSessions);
+server.get('/DashboardEvent/AverageTimeWithCurrentSessions/:window/:param1/:param2', authorization({resource:"dashboardevent", action:"read"}), countService.OnGetAverageTimeWithCurrentSessions);
+server.get('/DashboardEvent/TotalTime/:window/:param1/:param2', authorization({resource:"dashboardevent", action:"read"}), countService.OnGetTotalTime);
+server.get('/DashboardEvent/AverageTimePerKeyWithCurrentSessions/:window/:param1/:param2', authorization({resource:"dashboardevent", action:"read"}), countService.OnGetAverageTimePerKeyWithCurrentSessions);
+server.get('/DashboardEvent/AverageCountPerKey/:window/:param1/:param2', authorization({resource:"dashboardevent", action:"read"}), countService.OnGetAverageCountPerKey);
 
 //---------------------------DashboardGraph--------------------------------------
 
