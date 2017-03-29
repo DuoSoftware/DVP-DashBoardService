@@ -42,7 +42,8 @@ server.get('/DashboardEvent/TotalTimeWithCurrentSessions/:window/:param1/:param2
 server.get('/DashboardEvent/AverageTimeWithCurrentSessions/:window/:param1/:param2', authorization({resource:"dashboardevent", action:"read"}), countService.OnGetAverageTimeWithCurrentSessions);
 server.get('/DashboardEvent/TotalTime/:window/:param1/:param2', authorization({resource:"dashboardevent", action:"read"}), countService.OnGetTotalTime);
 server.get('/DashboardEvent/AverageTimePerKeyWithCurrentSessions/:window/:param1/:param2', authorization({resource:"dashboardevent", action:"read"}), countService.OnGetAverageTimePerKeyWithCurrentSessions);
-server.get('/DashboardEvent/AverageCountPerKey/:window/:param1/:param2', authorization({resource:"dashboardevent", action:"read"}), countService.OnGetAverageCountPerKey);
+server.get('/DashboardEvent/AverageCountPerKey/count/:countWindow/:countParam1/:countParam2/key/:keyWindow/:keyParam1/:keyParam2', authorization({resource:"dashboardevent", action:"read"}), countService.OnGetAverageCountPerKey);
+server.get('/DashboardEvent/CountPerKey/:window/:param1/:param2', authorization({resource:"dashboardevent", action:"read"}), countService.OnGetCountPerKey);
 
 //---------------------------DashboardGraph--------------------------------------
 

@@ -568,7 +568,7 @@ var onGetAverageTime = function(tenant, company, window, param1, param2){
     return deferred.promise;
 };
 
-var onGetAverageCountPerKey = function(tenant, company, window, param1, param2){
+var onGetAverageCountPerKey = function(tenant, company, countWindow, countParam1, countParam2, keyWindow, keyParam1, keyParam2){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetAverageCountPerKey Internal method ");
@@ -580,9 +580,9 @@ var onGetAverageCountPerKey = function(tenant, company, window, param1, param2){
     var average = 0;
 
 
-    onGetTotalCount(tenant, company, window, param1, param2).then(function(result){
+    onGetTotalCount(tenant, company, countWindow, countParam1, countParam2).then(function(result){
         totalCount = totalCount + result.value;
-        return onGetTotalKeyCount(tenant, company, window, param1, param2);
+        return onGetTotalKeyCount(tenant, company, keyWindow, keyParam1, keyParam2);
     }).then(function(result){
         totalKeys = result.value;
 
@@ -775,6 +775,7 @@ var onGetSingleQueueDetails = function(tenant, company, queueId){
 };
 
 
+
 var OnGetMaxTime = function(req,res){
     var tenant = req.user.tenant;
     var company = req.user.company;
@@ -919,11 +920,24 @@ var OnGetAverageCountPerKey = function(req,res){
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetAverageCountPerKey(tenant, company, req.params.window, req.params.param1, req.params.param2).then(function(result){
+    onGetAverageCountPerKey(tenant, company, req.params.countWndow, req.params.countParam1, req.params.countParam2, req.params.keyWindow, req.params.keyParam1, req.params.keyParam2).then(function(result){
         res.end(result.jsonString);
     }).catch(function(err){
         console.log(err);
         res.end(messageFormatter.FormatMessage(err, "OnGetAverageCountPerKey: Error", false, 0));
+    });
+
+};
+
+var OnGetCountPerKey = function(req,res){
+    var tenant = req.user.tenant;
+    var company = req.user.company;
+
+    onGetTotalKeyCount(tenant, company, req.params.window, req.params.param1, req.params.param2).then(function(result){
+        res.end(result.jsonString);
+    }).catch(function(err){
+        console.log(err);
+        res.end(messageFormatter.FormatMessage(err, "OnGetCountPerKey: Error", false, 0));
     });
 
 };
@@ -941,3 +955,4 @@ module.exports.OnGetAverageTimeWithCurrentSessions = OnGetAverageTimeWithCurrent
 module.exports.OnGetTotalTime = OnGetTotalTime;
 module.exports.OnGetAverageTimePerKeyWithCurrentSessions = OnGetAverageTimePerKeyWithCurrentSessions;
 module.exports.OnGetAverageCountPerKey = OnGetAverageCountPerKey;
+module.exports.OnGetCountPerKey = OnGetCountPerKey;
