@@ -920,7 +920,7 @@ var OnGetAverageCountPerKey = function(req,res){
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetAverageCountPerKey(tenant, company, req.params.countWndow, req.params.countParam1, req.params.countParam2, req.params.keyWindow, req.params.keyParam1, req.params.keyParam2).then(function(result){
+    onGetAverageCountPerKey(tenant, company, req.params.countWindow, req.params.countParam1, req.params.countParam2, req.params.keyWindow, req.params.keyParam1, req.params.keyParam2).then(function(result){
         res.end(result.jsonString);
     }).catch(function(err){
         console.log(err);
