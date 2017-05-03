@@ -12,6 +12,14 @@ module.exports = {
         "redisDB":"SYS_REDIS_DB_DASHBOARD"
 
     },
+    "DB": {
+        "Type": "SYS_DATABASE_TYPE",
+        "User": "SYS_DATABASE_POSTGRES_USER",
+        "Password": "SYS_DATABASE_POSTGRES_PASSWORD",
+        "Port": "SYS_SQL_PORT",
+        "Host": "SYS_DATABASE_HOST",
+        "Database": "SYS_DATABASE_POSTGRES_USER"
+    },
 
     "ArdsRedis":
     {
@@ -54,5 +62,12 @@ module.exports = {
 
     "ServiceConfig":{
         "addCurrentSessions": "HOST_DASHBOARDSERVICE_ADDSESSION"
+    },
+
+    "Services" : {
+        "accessToken": "HOST_TOKEN",
+        "notificationServiceHost": "SYS_NOTIFICATIONSERVICE_HOST",
+        "notificationServicePort": "SYS_NOTIFICATIONSERVICE_PORT",
+        "notificationServiceVersion": "SYS_NOTIFICATIONSERVICE_VERSION"
     }
 };
