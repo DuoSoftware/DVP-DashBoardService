@@ -12,6 +12,7 @@ var util = require('util');
 var countService = require('./Services/CountService.js');
 var graphService = require('./Services/GraphService.js');
 var port = config.Host.port || 8874;
+var dashboardPubService = require('./Services/DashboardPubService');
 
 var server = restify.createServer({
     name: "DVP Dashboard Service"
@@ -59,6 +60,11 @@ server.get('/DashboardGraph/ClosedVsOpenTicket/:duration', authorization({resour
 server.get('/DashboardGraph/NewTicketByUser/:duration', authorization({resource:"dashboardgraph", action:"read"}), graphService.OnGetTotalNewTicketByUser);
 server.get('/DashboardGraph/ClosedTicketByUser/:duration', authorization({resource:"dashboardgraph", action:"read"}), graphService.OnGetTotalClosedTicketByUser);
 server.get('/DashboardGraph/ClosedVsOpenTicketByUser/:duration', authorization({resource:"dashboardgraph", action:"read"}), graphService.OnGetDiffClosedVsNewByUser);
+
+//---------------------------DashboardPublish--------------------------------------
+
+server.post('/DashboardEvent/Publish/:window/:param1/:param2', authorization({resource:"dashboardevent", action:"read"}), dashboardPubService.PublishDashboardData);
+
 
 server.listen(port, function () {
     logger.info("DVP-DashboardService.main Server %s listening at %s", server.name, server.url);

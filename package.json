@@ -20,6 +20,7 @@
     "bluebird": "^3.4.7",
     "config": "^1.24.0",
     "dvp-common": "^0.5.7",
+    "dvp-dbmodels": "^1.1.7",
     "moment": "^2.17.1",
     "q": "^1.4.1",
     "redis": "^2.6.3",
@@ -27,6 +28,7 @@
     "request": "^2.79.0",
     "restify": "^4.3.0",
     "restify-jwt": "^0.4.0",
-    "stringify": "^5.1.0"
+    "stringify": "^5.1.0",
+    "validator": "^7.0.0"
   }
 }

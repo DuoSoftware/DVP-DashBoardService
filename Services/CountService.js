@@ -133,20 +133,28 @@ var onGetCurrentMaxTime = function(tenant, company, window, param1, param2){
         }else{
             if(result && result.length > 0){
                 var tempMaxTime = 0;
+                var maxTimeStamp = undefined;
                 var timeNow = moment();
-                for(var i = 0; i< result.length; i++){
-                    var sessionTime = moment(result[i]);
-                    var timeDiff = timeNow.diff(sessionTime, 'seconds');
-                    if (tempMaxTime < timeDiff) {
-                        tempMaxTime = timeDiff
-                    }
-                }
 
-                reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetCurrentMaxTime: Success", true, tempMaxTime);
-                reply.value = tempMaxTime;
+
+
+                result.sort(function (time1, time2){
+                    return moment(time2).isBefore(moment(time1))
+                });
+                //for(var i = 0; i< result.length; i++){
+                //    var sessionTime = moment(result[i]);
+                //    var timeDiff = timeNow.diff(sessionTime, 'seconds');
+                //    if (tempMaxTime < timeDiff) {
+                //        tempMaxTime = timeDiff;
+                //        maxTimeStamp = result[i];
+                //    }
+                //}
+
+                reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetCurrentMaxTime: Success", true, result[0]);
+                reply.value = result[0];
                 deferred.resolve(reply);
             }else{
-                reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetCurrentMaxTime: No Keys Found", false, 0);
+                reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetCurrentMaxTime: No Keys Found", false, undefined);
                 reply.value = 0;
                 deferred.resolve(reply);
             }
@@ -943,6 +951,26 @@ var OnGetCountPerKey = function(req,res){
 };
 
 
+
+
+//------------------------Library Functions---------------------------------------------------
+
+module.exports.OnGetTotalCountLib = onGetTotalCount;
+module.exports.OnGetCurrentCountLib = onGetCurrentCount;
+module.exports.OnGetTotalTimeLib = onGetTotalTime;
+module.exports.OnGetMaxTimeLib = onGetMaxTime;
+module.exports.OnGetCurrentMaxTimeLib = onGetCurrentMaxTime;
+module.exports.OnGetAverageTimeLib = onGetAverageTime;
+module.exports.OnGetQueueDetailsLib = onGetQueueDetails;
+module.exports.OnGetSingleQueueDetailsLib = onGetSingleQueueDetails;
+module.exports.OnGetTotalTimeWithCurrentSessionsLib = onGetTotalTimeWithCurrentSessions;
+module.exports.OnGetAverageTimeWithCurrentSessionsLib = onGetAverageTimeWithCurrentSessions;
+module.exports.OnGetAverageTimePerKeyWithCurrentSessionsLib = onGetAverageTimePerKeyWithCurrentSessions;
+module.exports.OnGetAverageCountPerKeyLib = onGetAverageCountPerKey;
+module.exports.OnGetCountPerKeyLib = onGetTotalKeyCount;
+
+
+//------------------------http----------------------------------------------------------------
 module.exports.OnGetMaxTime = OnGetMaxTime;
 module.exports.OnGetCurrentMaxTime = OnGetCurrentMaxTime;
 module.exports.OnGetCurrentCount = OnGetCurrentCount;
