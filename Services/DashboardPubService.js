@@ -329,6 +329,37 @@ var collectTotalKeyCount = function(company, tenant, window, eventName, param1, 
     return deferred.promise;
 };
 
+var collectTotalTimeWithCurrentSession = function(company, tenant, window, eventName, param1, param2){
+    var deferred = Q.defer();
+
+    logger.info("DVP-DashboardService.collectTotalTimeWithCurrentSession Internal method ");
+
+    var reply = {
+        roomData: { roomName: window+':'+eventName, eventName: eventName },
+        DashboardData: {window: window, param1: param1, param2: param2}
+    };
+
+
+    countService.OnGetTotalTimeWithCurrentSessionsLib(tenant, company, window, '*', '*').then(function(result){
+        reply.DashboardData.TotalTimeWindow = result.value;
+        return countService.OnGetTotalTimeWithCurrentSessionsLib(tenant, company, window, param1, '*');
+    }).then(function(result){
+        reply.DashboardData.TotalTimeParam1 = result.value;
+        return countService.OnGetTotalTimeWithCurrentSessionsLib(tenant, company, window, '*', param2);
+    }).then(function(result){
+        reply.DashboardData.TotalTimeParam2 = result.value;
+        return countService.OnGetTotalTimeWithCurrentSessionsLib(tenant, company, window, param1, param2);
+    }).then(function(result){
+        reply.DashboardData.TotalTimeAllParams = result.value;
+        deferred.resolve(reply);
+    }).catch(function(err){
+        logger.error('collectTotalTimeWithCurrentSession: Error:: '+err);
+        deferred.resolve(reply);
+    });
+
+    return deferred.promise;
+};
+
 
 var publishDashboardData = function (req, res) {
     var company = parseInt(req.user.company);
@@ -367,6 +398,9 @@ var publishDashboardData = function (req, res) {
                         break;
                     case 'TotalKeyCount':
                         asyncFuncArray.push(collectTotalKeyCount(company, tenant, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                        break;
+                    case 'TotalTimeWithCurrentSession':
+                        asyncFuncArray.push(collectTotalTimeWithCurrentSession(company, tenant, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
                         break;
                     default :
                         break;
