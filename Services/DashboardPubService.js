@@ -15,6 +15,7 @@ var request = require('request');
 
 function DoPost (companyInfo, eventName, serviceurl, postData, callback) {
     var jsonStr = JSON.stringify(postData);
+    logger.info('Notification Url:: '+ serviceurl +' :: Notification Data :: '+ jsonStr);
     var accessToken = util.format("bearer %s", config.Services.accessToken);
     var options = {
         url: serviceurl,
