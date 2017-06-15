@@ -15,6 +15,7 @@ var request = require('request');
 
 function DoPost (companyInfo, eventName, serviceurl, postData, callback) {
     var jsonStr = JSON.stringify(postData);
+    logger.info('Notification Url:: '+ serviceurl +' :: Notification Data :: '+ jsonStr);
     var accessToken = util.format("bearer %s", config.Services.accessToken);
     var options = {
         url: serviceurl,
@@ -298,6 +299,68 @@ var collectSingleQueueDetails = function(company, tenant, window, eventName, que
     return deferred.promise;
 };
 
+var collectTotalKeyCount = function(company, tenant, window, eventName, param1, param2){
+    var deferred = Q.defer();
+
+    logger.info("DVP-DashboardService.collectTotalKeyCount Internal method ");
+
+    var reply = {
+        roomData: { roomName: window+':'+eventName, eventName: eventName },
+        DashboardData: {window: window, param1: param1, param2: param2}
+    };
+
+
+    countService.OnGetCountPerKeyLib(tenant, company, window, '*', '*').then(function(result){
+        reply.DashboardData.TotalCountWindow = result.value;
+        return countService.OnGetCountPerKeyLib(tenant, company, window, param1, '*');
+    }).then(function(result){
+        reply.DashboardData.TotalCountParam1 = result.value;
+        return countService.OnGetCountPerKeyLib(tenant, company, window, '*', param2);
+    }).then(function(result){
+        reply.DashboardData.TotalCountParam2 = result.value;
+        return countService.OnGetCountPerKeyLib(tenant, company, window, param1, param2);
+    }).then(function(result){
+        reply.DashboardData.TotalCountAllParams = result.value;
+        deferred.resolve(reply);
+    }).catch(function(err){
+        logger.error('collectTotalKeyCount: Error:: '+err);
+        deferred.resolve(reply);
+    });
+
+    return deferred.promise;
+};
+
+var collectTotalTimeWithCurrentSession = function(company, tenant, window, eventName, param1, param2){
+    var deferred = Q.defer();
+
+    logger.info("DVP-DashboardService.collectTotalTimeWithCurrentSession Internal method ");
+
+    var reply = {
+        roomData: { roomName: window+':'+eventName, eventName: eventName },
+        DashboardData: {window: window, param1: param1, param2: param2}
+    };
+
+
+    countService.OnGetTotalTimeWithCurrentSessionsLib(tenant, company, window, '*', '*').then(function(result){
+        reply.DashboardData.TotalTimeWindow = result.value;
+        return countService.OnGetTotalTimeWithCurrentSessionsLib(tenant, company, window, param1, '*');
+    }).then(function(result){
+        reply.DashboardData.TotalTimeParam1 = result.value;
+        return countService.OnGetTotalTimeWithCurrentSessionsLib(tenant, company, window, '*', param2);
+    }).then(function(result){
+        reply.DashboardData.TotalTimeParam2 = result.value;
+        return countService.OnGetTotalTimeWithCurrentSessionsLib(tenant, company, window, param1, param2);
+    }).then(function(result){
+        reply.DashboardData.TotalTimeAllParams = result.value;
+        deferred.resolve(reply);
+    }).catch(function(err){
+        logger.error('collectTotalTimeWithCurrentSession: Error:: '+err);
+        deferred.resolve(reply);
+    });
+
+    return deferred.promise;
+};
+
 
 var publishDashboardData = function (req, res) {
     var company = parseInt(req.user.company);
@@ -333,6 +396,12 @@ var publishDashboardData = function (req, res) {
                         break;
                     case 'QueueDetail':
                         asyncFuncArray.push(collectSingleQueueDetails(company, tenant, 'QUEUE', pubMeta.EventName, req.params.param1));
+                        break;
+                    case 'TotalKeyCount':
+                        asyncFuncArray.push(collectTotalKeyCount(company, tenant, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                        break;
+                    case 'TotalTimeWithCurrentSession':
+                        asyncFuncArray.push(collectTotalTimeWithCurrentSession(company, tenant, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
                         break;
                     default :
                         break;
