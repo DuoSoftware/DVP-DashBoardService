@@ -98,9 +98,9 @@ if(redismode != "cluster") {
 client.on("error", function (err) {
     logger.error('Redis connection error :: %s', err);
 });
-
+//
 client.on("connect", function (err) {
-    client.select(config.Redis.redisDB, redis.print);
+    //client.select(config.Redis.redisDB, redis.print);
 
 });
 
@@ -193,7 +193,7 @@ ardsClient.on("error", function (err) {
 });
 
 ardsClient.on("connect", function (err) {
-    ardsClient.select(config.ArdsRedis.ardsRedisDB, redis.print);
+    //ardsClient.select(config.ArdsRedis.ardsRedisDB, redis.print);
 });
 
 
@@ -216,7 +216,7 @@ function scanAsync(index, pattern, matchingKeys){
         });
         */
 
-    var promiseFunc = new promise(function (resolve, reject) {
+    var promiseFunc = new Promise(function (resolve, reject) {
         var stream = client.scanStream({
             match: pattern,
             count: 1000
