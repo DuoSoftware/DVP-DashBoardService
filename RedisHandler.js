@@ -200,7 +200,7 @@ ardsClient.on("connect", function (err) {
 
 function scanAsync(index, pattern, matchingKeys){
     console.log("-------------------Using scanAsync---------------------");
-    return client.scanAsync(index, 'MATCH', pattern, 'COUNT', 1000).then(
+    /*return client.scanAsync(index, 'MATCH', pattern, 'COUNT', 1000).then(
         function (replies) {
             if(replies.length > 1) {
                 var match = matchingKeys.concat(replies[1]);
@@ -214,6 +214,26 @@ function scanAsync(index, pattern, matchingKeys){
             }
 
         });
+        */
+
+    var promiseFunc = new promise(function (resolve, reject) {
+        var stream = client.scanStream({
+            match: pattern,
+            count: 1000
+        });
+
+        stream.on('data', function (resultKeys) {
+            for (var i = 0; i < resultKeys.length; i++) {
+                matchingKeys.push(resultKeys[i]);
+            }
+        });
+        stream.on('end', function () {
+            resolve(matchingKeys);
+        });
+    });
+
+    return promiseFunc;
+
 }
 
 /*var scanKeys = function(index, pattern, matchingKeys, callback){
