@@ -7,11 +7,11 @@ module.exports = {
     "Redis":
     {
         "mode":"SYS_REDIS_MODE",
-        "ip": "SYS_REDIS_HOST",
-        "port": "SYS_REDIS_PORT",
+        "ip": "SYS_DASHBOARD_REDIS_HOST",
+        "port": "SYS_DASHBOARD_REDIS_PORT",
         "user": "SYS_REDIS_USER",
-        "db": "SYS_REDIS_DB",
-        "password": "SYS_REDIS_PASSWORD",
+        "db": "SYS_REDIS_DB_DASHBOARD",
+        "password": "SYS_DASHBOARD_REDIS_PASSWORD",
         "sentinels":{
             "hosts": "SYS_REDIS_SENTINEL_HOSTS",
             "port":"SYS_REDIS_SENTINEL_PORT",
