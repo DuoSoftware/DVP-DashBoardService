@@ -414,6 +414,7 @@ var publishDashboardData = function (req, res) {
                     if(results){
                         results.forEach(function (result) {
                             var postData = {message: result.DashboardData, From: 'DashboardService'};
+                            postData.message.EventTime = moment().format();
                             RequestToNotify(company, tenant, result.roomData.roomName, result.roomData.eventName, postData);
                         });
                     }
