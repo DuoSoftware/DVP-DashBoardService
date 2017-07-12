@@ -12,7 +12,6 @@ var dbConn = require('dvp-dbmodels');
 var config = require('config');
 var validator = require('validator');
 var request = require('request');
-var moment = require('moment');
 
 function DoPost (companyInfo, eventName, serviceurl, postData, callback) {
     var jsonStr = JSON.stringify(postData);
@@ -415,7 +414,6 @@ var publishDashboardData = function (req, res) {
                     if(results){
                         results.forEach(function (result) {
                             var postData = {message: result.DashboardData, From: 'DashboardService'};
-                            postData.message.EventTime = moment().format();
                             RequestToNotify(company, tenant, result.roomData.roomName, result.roomData.eventName, postData);
                         });
                     }
