@@ -62,6 +62,7 @@ var getQueueDetail = function(tenant, company, queueId){
         queueDetail.QueueInfo.MaxWaitTime = result.value;
         return onGetCurrentMaxTime(tenant, company, 'QUEUE', queueId, '*');
     }).then(function(result){
+        queueDetail.QueueInfo.ServerTime = new Date().toISOString();
         queueDetail.QueueInfo.CurrentMaxWaitTime = result.value;
         return onGetCurrentCount(tenant, company, 'QUEUE', queueId, '*');
     }).then(function(result){
