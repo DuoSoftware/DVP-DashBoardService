@@ -12,6 +12,7 @@ var dbConn = require('dvp-dbmodels');
 var config = require('config');
 var validator = require('validator');
 var request = require('request');
+var moment = require('moment');
 
 function DoPost (companyInfo, eventName, serviceurl, postData, callback) {
     var jsonStr = JSON.stringify(postData);
