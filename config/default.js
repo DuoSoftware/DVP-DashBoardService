@@ -3,14 +3,63 @@
  */
 
 module.exports = {
+
     "Redis":
     {
+        "mode":"instance",//instance, cluster, sentinel
         "ip": "104.131.67.21",
         "port": 6379,
         "user": "duo",
         "password": "DuoS123",
-        "redisDB":8
+        "db":8,
+        "sentinels":{
+            "hosts": "138.197.90.92,45.55.205.92,162.243.81.39",
+            "port":16389,
+            "name":"redis-cluster"
+        }
+
     },
+
+
+    "Security":
+    {
+
+        "ip" : "45.55.142.207",
+        "port": 6389,
+        "user": "duo",
+        "password": "DuoS123",
+        "mode":"instance",//instance, cluster, sentinel
+        "sentinels":{
+            "hosts": "138.197.90.92,45.55.205.92,162.243.81.39",
+            "port":16389,
+            "name":"redis-cluster"
+        }
+    },
+
+    "ArdsRedis":
+    {
+
+        "ip" : "45.55.142.207",
+        "port": 6389,
+        "user": "duo",
+        "password": "DuoS123",
+        "db": 6,
+        "mode":"instance",//instance, cluster, sentinel
+        "sentinels":{
+            "hosts": "138.197.90.92,45.55.205.92,162.243.81.39",
+            "port":16389,
+            "name":"redis-cluster"
+        }
+    },
+
+    //"Redis":
+    //{
+    //    "ip": "104.131.67.21",
+    //    "port": 6379,
+    //    "user": "duo",
+    //    "password": "DuoS123",
+    //    "redisDB":8
+    //},
     "DB": {
         "Type": "postgres",
         "User": "duo",
@@ -20,23 +69,16 @@ module.exports = {
         "Database": "duo"
     },
 
-    "ArdsRedis":
-    {
-        "ip": "45.55.142.207",
-        "port": 6389,
-        "user": "duo",
-        "password": "DuoS123",
-        "ardsRedisDB": 6
-    },
 
 
-    "Security":
-    {
-        "ip" : "45.55.142.207",
-        "port": 6389,
-        "user": "duo",
-        "password": "DuoS123"
-    },
+
+    //"Security":
+    //{
+    //    "ip" : "45.55.142.207",
+    //    "port": 6389,
+    //    "user": "duo",
+    //    "password": "DuoS123"
+    //},
 
 
     "Host":

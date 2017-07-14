@@ -2,52 +2,205 @@
  * Created by Heshan.i on 12/5/2016.
  */
 
-var redis = require('redis');
+var redis = require('ioredis');
 var bluebird = require('bluebird');
 var util = require('util');
 var config = require('config');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var eventEmitter = require('events').EventEmitter;
 
-bluebird.promisifyAll(redis.RedisClient.prototype);
-bluebird.promisifyAll(redis.Multi.prototype);
+//bluebird.promisifyAll(redis.RedisClient.prototype);
+//bluebird.promisifyAll(redis.Multi.prototype);
 
-require("redis-scanrx")(redis);
+//require("redis-scanrx")(redis);
 
 //--------------------Dashboards Redis Client-------------------------------------
-var client = redis.createClient(config.Redis.port, config.Redis.ip);
-client.auth(config.Redis.password);
-client.select(config.Redis.redisDB, redis.print);
-//client.select(config.Redis.redisdb, function () { /* ... */ });
+var redisip = config.Redis.ip;
+var redisport = config.Redis.port;
+var redispass = config.Redis.password;
+var redismode = config.Redis.mode;
+var redisdb = config.Redis.db;
+
+
+
+var redisSetting =  {
+    port:redisport,
+    host:redisip,
+    family: 4,
+    password: redispass,
+    db: redisdb,
+    retryStrategy: function (times) {
+        var delay = Math.min(times * 50, 2000);
+        return delay;
+    },
+    reconnectOnError: function (err) {
+
+        return true;
+    }
+};
+
+if(redismode == 'sentinel'){
+
+    if(config.Redis.sentinels && config.Redis.sentinels.hosts && config.Redis.sentinels.port, config.Redis.sentinels.name){
+        var sentinelHosts = config.Redis.sentinels.hosts.split(',');
+        if(Array.isArray(sentinelHosts) && sentinelHosts.length > 2){
+            var sentinelConnections = [];
+
+            sentinelHosts.forEach(function(item){
+
+                sentinelConnections.push({host: item, port:config.Redis.sentinels.port})
+
+            })
+
+            redisSetting = {
+                sentinels:sentinelConnections,
+                name: config.Redis.sentinels.name,
+                password: redispass
+            }
+
+        }else{
+
+            console.log("No enough sentinel servers found .........");
+        }
+
+    }
+}
+
+var client = undefined;
+
+if(redismode != "cluster") {
+    client = new redis(redisSetting);
+}else{
+
+    var redisHosts = redisip.split(",");
+    if(Array.isArray(redisHosts)){
+
+
+        redisSetting = [];
+        redisHosts.forEach(function(item){
+            redisSetting.push({
+                host: item,
+                port: redisport,
+                family: 4,
+                password: redispass});
+        });
+
+        var client = new redis.Cluster([redisSetting]);
+
+    }else{
+
+        client = new redis(redisSetting);
+    }
+
+
+}
+
 client.on("error", function (err) {
     logger.error('Redis connection error :: %s', err);
 });
-
+//
 client.on("connect", function (err) {
-    client.select(config.Redis.redisDB, redis.print);
+    //client.select(config.Redis.redisDB, redis.print);
 
 });
 
 
 //--------------------Ards Redis Client-------------------------------------
 
-var ardsClient = redis.createClient(config.ArdsRedis.port, config.ArdsRedis.ip);
-ardsClient.auth(config.ArdsRedis.password);
-ardsClient.select(config.ArdsRedis.ardsRedisDB, redis.print);
-//client.select(config.Redis.redisdb, function () { /* ... */ });
+var ardsredisip = config.ArdsRedis.ip;
+var ardsredisport = config.ArdsRedis.port;
+var ardsredispass = config.ArdsRedis.password;
+var ardsredismode = config.ArdsRedis.mode;
+var ardsredisdb = config.ArdsRedis.db;
+
+
+
+var ardsredisSetting =  {
+    port:ardsredisport,
+    host:ardsredisip,
+    family: 4,
+    password: ardsredispass,
+    db: ardsredisdb,
+    retryStrategy: function (times) {
+        var delay = Math.min(times * 50, 2000);
+        return delay;
+    },
+    reconnectOnError: function (err) {
+
+        return true;
+    }
+};
+
+if(ardsredismode == 'sentinel'){
+
+    if(config.ArdsRedis.sentinels && config.ArdsRedis.sentinels.hosts && config.ArdsRedis.sentinels.port, config.ArdsRedis.sentinels.name){
+        var sentinelHosts = config.ArdsRedis.sentinels.hosts.split(',');
+        if(Array.isArray(sentinelHosts) && sentinelHosts.length > 2){
+            var sentinelConnections = [];
+
+            sentinelHosts.forEach(function(item){
+
+                sentinelConnections.push({host: item, port:config.ArdsRedis.sentinels.port})
+
+            })
+
+            ardsredisSetting = {
+                sentinels:sentinelConnections,
+                name: config.ArdsRedis.sentinels.name,
+                password: ardsredispass
+            }
+
+        }else{
+
+            console.log("No enough sentinel servers found .........");
+        }
+
+    }
+}
+
+var ardsClient = undefined;
+
+if(ardsredismode != "cluster") {
+    ardsClient = new redis(ardsredisSetting);
+}else{
+
+    var redisHosts = redisip.split(",");
+    if(Array.isArray(redisHosts)){
+
+
+        ardsredisSetting = [];
+        redisHosts.forEach(function(item){
+            ardsredisSetting.push({
+                host: item,
+                port: ardsredisport,
+                family: 4,
+                password: ardsredispass});
+        });
+
+        var ardsClient = new redis.Cluster([ardsredisSetting]);
+
+    }else{
+
+        ardsClient = new redis(ardsredisSetting);
+    }
+
+
+}
+
+
 ardsClient.on("error", function (err) {
     logger.error('ARDS Redis connection error :: %s', err);
 });
 
 ardsClient.on("connect", function (err) {
-    ardsClient.select(config.ArdsRedis.ardsRedisDB, redis.print);
+    //ardsClient.select(config.ArdsRedis.ardsRedisDB, redis.print);
 });
 
 
 
 function scanAsync(index, pattern, matchingKeys){
     console.log("-------------------Using scanAsync---------------------");
-    return client.scanAsync(index, 'MATCH', pattern, 'COUNT', 1000).then(
+    /*return client.scanAsync(index, 'MATCH', pattern, 'COUNT', 1000).then(
         function (replies) {
             if(replies.length > 1) {
                 var match = matchingKeys.concat(replies[1]);
@@ -61,6 +214,26 @@ function scanAsync(index, pattern, matchingKeys){
             }
 
         });
+        */
+
+    var promiseFunc = new Promise(function (resolve, reject) {
+        var stream = client.scanStream({
+            match: pattern,
+            count: 1000
+        });
+
+        stream.on('data', function (resultKeys) {
+            for (var i = 0; i < resultKeys.length; i++) {
+                matchingKeys.push(resultKeys[i]);
+            }
+        });
+        stream.on('end', function () {
+            resolve(matchingKeys);
+        });
+    });
+
+    return promiseFunc;
+
 }
 
 /*var scanKeys = function(index, pattern, matchingKeys, callback){
