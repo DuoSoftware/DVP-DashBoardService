@@ -55,7 +55,8 @@ if(redismode == 'sentinel'){
             redisSetting = {
                 sentinels:sentinelConnections,
                 name: config.Redis.sentinels.name,
-                password: redispass
+                password: redispass,
+                db: redisdb
             }
 
         }else{
@@ -82,7 +83,8 @@ if(redismode != "cluster") {
                 host: item,
                 port: redisport,
                 family: 4,
-                password: redispass});
+                password: redispass,
+                db: redisdb});
         });
 
         var client = new redis.Cluster([redisSetting]);
@@ -147,7 +149,8 @@ if(ardsredismode == 'sentinel'){
             ardsredisSetting = {
                 sentinels:sentinelConnections,
                 name: config.ArdsRedis.sentinels.name,
-                password: ardsredispass
+                password: ardsredispass,
+                db: ardsredisdb
             }
 
         }else{
@@ -174,7 +177,8 @@ if(ardsredismode != "cluster") {
                 host: item,
                 port: ardsredisport,
                 family: 4,
-                password: ardsredispass});
+                password: ardsredispass,
+                db: ardsredisdb});
         });
 
         var ardsClient = new redis.Cluster([ardsredisSetting]);
