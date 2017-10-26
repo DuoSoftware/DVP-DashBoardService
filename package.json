@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/DuoSoftware/DVP-DashBoardService#readme",
   "dependencies": {
+    "async": "^2.5.0",
     "bluebird": "^3.4.7",
     "config": "^1.24.0",
     "dvp-common": "^0.8.4",
