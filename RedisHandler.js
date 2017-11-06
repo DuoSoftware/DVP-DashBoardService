@@ -8,6 +8,7 @@ var util = require('util');
 var config = require('config');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var eventEmitter = require('events').EventEmitter;
+var async = require('async');
 
 //bluebird.promisifyAll(redis.RedisClient.prototype);
 //bluebird.promisifyAll(redis.Multi.prototype);
@@ -41,7 +42,7 @@ var redisSetting =  {
 
 if(redismode == 'sentinel'){
 
-    if(config.Redis.sentinels && config.Redis.sentinels.hosts && config.Redis.sentinels.port, config.Redis.sentinels.name){
+    if(config.Redis.sentinels && config.Redis.sentinels.hosts && config.Redis.sentinels.port && config.Redis.sentinels.name){
         var sentinelHosts = config.Redis.sentinels.hosts.split(',');
         if(Array.isArray(sentinelHosts) && sentinelHosts.length > 2){
             var sentinelConnections = [];
@@ -265,28 +266,34 @@ function scanAsync(index, pattern, matchingKeys){
 };*/
 
 
-var GetHashValues = function (keys, field) {
-    var e = new eventEmitter();
-    var count = 0;
-    for (var i=0; i< keys.length; i++) {
-        var key = keys[i];
-        client.hget(key, field, function (err, hValue) {
+var GetHashValues = function (keys, field, callback) {
 
-            count++;
+    var hashFunctions = [];
+    keys.forEach(function (key) {
+        hashFunctions.push(function (callback) {
+            client.hget(key, field, function (err, hValue) {
 
-            if(err){
-                logger.error('Redis hget error :: %s', err);
-            }else{
-                e.emit('result', hValue);
-            }
+                if(err){
+                    logger.error('Redis hget error :: %s', err);
+                }
 
-            if (keys.length === count) {
-                console.log("end", count);
-                e.emit('end');
-            }
+                callback(undefined, hValue);
+
+                //if(err){
+                //    logger.error('Redis hget error :: %s', err);
+                //}else{
+                //}
+                //
+                //if (keys.length === count) {
+                //    console.log("end", count);
+                //}
+            });
         });
-    }
-    return (e);
+    });
+
+    async.parallel(hashFunctions, function(err, results) {
+        callback(results);
+    });
 };
 
 var getHashValue = function (key, field) {
@@ -353,15 +360,17 @@ var searchHashes = function(searchPattern, hashField, callback){
         //} else {
             logger.info('Redis searchKeys success :: replies:%s', replies.length);
             if (replies && replies.length > 0) {
-                var ghv = GetHashValues(replies, hashField);
-
-                ghv.on('result', function (hValue) {
-                    result.push(hValue);
+                GetHashValues(replies, hashField, function (hValues) {
+                    callback(null, hValues);
                 });
 
-                ghv.on('end', function () {
-                    callback(null, result);
-                });
+                //ghv.on('result', function (hValue) {
+                //    result.push(hValue);
+                //});
+                //
+                //ghv.on('end', function () {
+                //    callback(null, result);
+                //});
             } else {
                 callback(null, result);
             }

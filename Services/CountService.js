@@ -29,12 +29,28 @@ var getQueueName = function(queueId){
     var deferred = Q.defer();
 
     var queue = queueId.replace(/-/g, ":");
+    var queueParams = queue.split(':');
+    var queuePriority = queueParams.pop();
+    var queueSettingId = queueParams.join(':');
     console.log('QueueId:: '+ queue);
-    redisHandler.GetHashField('QueueNameHash', queue, function(err, result){
+    console.log('QueueSettingId:: '+ queueSettingId);
+    redisHandler.GetHashField('QueueNameHash', queueSettingId, function(err, result){
         if(err){
             deferred.resolve(queueId);
         }else{
-            deferred.resolve(result);
+            if(result) {
+                var queueSetting = JSON.parse(result);
+
+                if(queueSetting && queueSetting.QueueName) {
+                    var queueName = queueSetting.QueueName;
+                    queueName = (queuePriority !== '0')? util.format('%s-P%s', queueName, queuePriority): queueName;
+                    deferred.resolve(queueName);
+                }else{
+                    deferred.resolve(queueId);
+                }
+            }else{
+                deferred.resolve(queueId);
+            }
         }
     });
 
