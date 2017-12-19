@@ -156,7 +156,7 @@ var onGetCurrentMaxTime = function(tenant, company, window, param1, param2){
 
 
                 result.sort(function (time1, time2){
-                    return moment(time2).isBefore(moment(time1))
+                    return moment(time1).diff(moment(time2))
                 });
                 //for(var i = 0; i< result.length; i++){
                 //    var sessionTime = moment(result[i]);
