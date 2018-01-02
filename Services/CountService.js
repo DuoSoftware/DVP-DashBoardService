@@ -57,33 +57,33 @@ var getQueueName = function(queueId){
     return deferred.promise;
 };
 
-var getQueueDetail = function(tenant, company, queueId){
+var getQueueDetail = function(tenant, company, businessUnit, queueId){
     var deferred = Q.defer();
 
     var queueDetail = {QueueId: queueId, QueueInfo: {}};
 
     getQueueName(queueId).then(function(queueName){
         queueDetail.QueueName = queueName;
-        return onGetTotalCount(tenant, company, 'QUEUE', queueId, '*');
+        return onGetTotalCount(tenant, company, businessUnit, 'QUEUE', queueId, '*');
     }).then(function(result){
         queueDetail.QueueInfo.TotalQueued = result.value;
-        return onGetTotalCount(tenant, company, 'QUEUEANSWERED', queueId, '*');
+        return onGetTotalCount(tenant, company, businessUnit, 'QUEUEANSWERED', queueId, '*');
     }).then(function(result){
         queueDetail.QueueInfo.TotalAnswered = result.value;
-        return onGetTotalCount(tenant, company, 'QUEUEDROPPED', queueId, '*');
+        return onGetTotalCount(tenant, company, businessUnit, 'QUEUEDROPPED', queueId, '*');
     }).then(function(result){
         queueDetail.QueueInfo.QueueDropped = result.value;
-        return onGetMaxTime(tenant, company, 'QUEUE', queueId, '*');
+        return onGetMaxTime(tenant, company, businessUnit, 'QUEUE', queueId, '*');
     }).then(function(result){
         queueDetail.QueueInfo.MaxWaitTime = result.value;
-        return onGetCurrentMaxTime(tenant, company, 'QUEUE', queueId, '*');
+        return onGetCurrentMaxTime(tenant, company, businessUnit, 'QUEUE', queueId, '*');
     }).then(function(result){
         queueDetail.QueueInfo.EventTime = moment().format();
         queueDetail.QueueInfo.CurrentMaxWaitTime = result.value;
-        return onGetCurrentCount(tenant, company, 'QUEUE', queueId, '*');
+        return onGetCurrentCount(tenant, company, businessUnit, 'QUEUE', queueId, '*');
     }).then(function(result){
         queueDetail.QueueInfo.CurrentWaiting = result.value;
-        return onGetAverageTime(tenant, company, 'QUEUE', queueId, '*');
+        return onGetAverageTime(tenant, company, businessUnit, 'QUEUE', queueId, '*');
     }).then(function(result){
         queueDetail.QueueInfo.AverageWaitTime = result.value;
         deferred.resolve(queueDetail);
@@ -95,14 +95,14 @@ var getQueueDetail = function(tenant, company, queueId){
     return deferred.promise;
 };
 
-var onGetMaxTime = function(tenant, company, window, param1, param2){
+var onGetMaxTime = function(tenant, company, businessUnit, window, param1, param2){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetMaxTime Internal method ");
 
     var reply = {};
 
-    var maxTimeSearch = util.format('MAXTIME:%s:%s:%s:%s:%s', tenant, company, window, param1, param2);
+    var maxTimeSearch = util.format('MAXTIME:%s:%s:%s:%s:%s:%s', tenant, company, businessUnit, window, param1, param2);
 
     redisHandler.SearchObjects(maxTimeSearch, function(err, result){
         if(err){
@@ -133,14 +133,14 @@ var onGetMaxTime = function(tenant, company, window, param1, param2){
     return deferred.promise;
 };
 
-var onGetCurrentMaxTime = function(tenant, company, window, param1, param2){
+var onGetCurrentMaxTime = function(tenant, company, businessUnit, window, param1, param2){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetCurrentMaxTime Internal method ");
 
     var reply = {};
 
-    var currentSessionSearch = util.format('SESSION:%s:%s:%s:*:%s:%s', tenant, company, window, param1, param2);
+    var currentSessionSearch = util.format('SESSION:%s:%s:%s:%s:*:%s:%s', tenant, company, businessUnit, window, param1, param2);
 
     redisHandler.SearchHashes(currentSessionSearch, 'time', function(err, result){
         if(err){
@@ -181,7 +181,7 @@ var onGetCurrentMaxTime = function(tenant, company, window, param1, param2){
     return deferred.promise;
 };
 
-var onGetCurrentCount = function(tenant, company, window, param1, param2){
+var onGetCurrentCount = function(tenant, company, businessUnit, window, param1, param2){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetCurrentCount Internal method ");
@@ -189,30 +189,58 @@ var onGetCurrentCount = function(tenant, company, window, param1, param2){
     var reply = {};
     var currentCountSearch;
 
-    if(param1 && param2) {
-        if(param1 !== '*' && param2 !== '*') {
-            currentCountSearch = util.format('CONCURRENT:%s:%s:%s:%s:%s', tenant, company, window, param1, param2);
-        }else if(param1 !== '*'){
-            currentCountSearch = util.format('CONCURRENTWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
-        }else if(param2 !== '*'){
-            currentCountSearch = util.format('CONCURRENTWLPARAM:%s:%s:%s:%s', tenant, company, window, param2);
-        }else{
+    if(businessUnit && businessUnit !== '*'){
+        if (param1 && param2) {
+            if (param1 !== '*' && param2 !== '*') {
+                currentCountSearch = util.format('CONCURRENT:%s:%s:%s:%s:%s:%s', tenant, company, businessUnit, window, param1, param2);
+            } else if (param1 !== '*') {
+                currentCountSearch = util.format('CONCURRENTWSPARAM:%s:%s:%s:%s:%s', tenant, company, businessUnit, window, param1);
+            } else if (param2 !== '*') {
+                currentCountSearch = util.format('CONCURRENTWLPARAM:%s:%s:%s:%s:%s', tenant, company, businessUnit, window, param2);
+            } else {
+                currentCountSearch = util.format('CONCURRENTWOPARAMS:%s:%s:%s:%s', tenant, company, businessUnit, window);
+            }
+        } else if (param1) {
+            if (param1 !== '*') {
+                currentCountSearch = util.format('CONCURRENTWSPARAM:%s:%s:%s:%s:%s', tenant, company, businessUnit, window, param1);
+            } else {
+                currentCountSearch = util.format('CONCURRENTWOPARAMS:%s:%s:%s:%s', tenant, company, businessUnit, window);
+            }
+        } else if (param2) {
+            if (param2 !== '*') {
+                currentCountSearch = util.format('CONCURRENTWLPARAM:%s:%s:%s:%s:%s', tenant, company, businessUnit, window, param2);
+            } else {
+                currentCountSearch = util.format('CONCURRENTWOPARAMS:%s:%s:%s:%s', tenant, company, businessUnit, window);
+            }
+        } else {
+            currentCountSearch = util.format('CONCURRENTWOPARAMS:%s:%s:%s:%s', tenant, company, businessUnit, window);
+        }
+    }else {
+        if (param1 && param2) {
+            if (param1 !== '*' && param2 !== '*') {
+                currentCountSearch = util.format('CONCURRENT:%s:%s:%s:%s:%s', tenant, company, window, param1, param2);
+            } else if (param1 !== '*') {
+                currentCountSearch = util.format('CONCURRENTWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
+            } else if (param2 !== '*') {
+                currentCountSearch = util.format('CONCURRENTWLPARAM:%s:%s:%s:%s', tenant, company, window, param2);
+            } else {
+                currentCountSearch = util.format('CONCURRENTWOPARAMS:%s:%s:%s', tenant, company, window);
+            }
+        } else if (param1) {
+            if (param1 !== '*') {
+                currentCountSearch = util.format('CONCURRENTWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
+            } else {
+                currentCountSearch = util.format('CONCURRENTWOPARAMS:%s:%s:%s', tenant, company, window);
+            }
+        } else if (param2) {
+            if (param2 !== '*') {
+                currentCountSearch = util.format('CONCURRENTWLPARAM:%s:%s:%s:%s', tenant, company, window, param2);
+            } else {
+                currentCountSearch = util.format('CONCURRENTWOPARAMS:%s:%s:%s', tenant, company, window);
+            }
+        } else {
             currentCountSearch = util.format('CONCURRENTWOPARAMS:%s:%s:%s', tenant, company, window);
         }
-    }else if(param1){
-        if(param1 !== '*'){
-            currentCountSearch = util.format('CONCURRENTWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
-        }else{
-            currentCountSearch = util.format('CONCURRENTWOPARAMS:%s:%s:%s', tenant, company, window);
-        }
-    }else if(param2){
-        if(param2 !== '*'){
-            currentCountSearch = util.format('CONCURRENTWLPARAM:%s:%s:%s:%s', tenant, company, window, param2);
-        }else{
-            currentCountSearch = util.format('CONCURRENTWOPARAMS:%s:%s:%s', tenant, company, window);
-        }
-    }else{
-        currentCountSearch = util.format('CONCURRENTWOPARAMS:%s:%s:%s', tenant, company, window);
     }
 
     redisHandler.GetObject(currentCountSearch, function(err, result){
@@ -270,7 +298,7 @@ var onGetCurrentCount = function(tenant, company, window, param1, param2){
     return deferred.promise;
 };
 
-var onGetTotalCount = function(tenant, company, window, param1, param2){
+var onGetTotalCount = function(tenant, company, businessUnit, window, param1, param2){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetTotalCount Internal method ");
@@ -278,30 +306,58 @@ var onGetTotalCount = function(tenant, company, window, param1, param2){
     var reply = {};
     var totalCountSearch;
 
-    if(param1 && param2) {
-        if(param1 !== '*' && param2 !== '*') {
-            totalCountSearch = util.format('TOTALCOUNT:%s:%s:%s:%s:%s', tenant, company, window, param1, param2);
-        }else if(param1 !== '*'){
-            totalCountSearch = util.format('TOTALCOUNTWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
-        }else if(param2 !== '*'){
-            totalCountSearch = util.format('TOTALCOUNTWLPARAM:%s:%s:%s:%s', tenant, company, window, param2);
-        }else{
+    if(businessUnit && businessUnit !== '*'){
+        if (param1 && param2) {
+            if (param1 !== '*' && param2 !== '*') {
+                totalCountSearch = util.format('TOTALCOUNT:%s:%s:%s:%s:%s:%s', tenant, company, businessUnit, window, param1, param2);
+            } else if (param1 !== '*') {
+                totalCountSearch = util.format('TOTALCOUNTWSPARAM:%s:%s:%s:%s:%s', tenant, company, businessUnit, window, param1);
+            } else if (param2 !== '*') {
+                totalCountSearch = util.format('TOTALCOUNTWLPARAM:%s:%s:%s:%s:%s', tenant, company, businessUnit, window, param2);
+            } else {
+                totalCountSearch = util.format('TOTALCOUNTWOPARAMS:%s:%s:%s:%s', tenant, company, businessUnit, window);
+            }
+        } else if (param1) {
+            if (param1 !== '*') {
+                totalCountSearch = util.format('TOTALCOUNTWSPARAM:%s:%s:%s:%s:%s', tenant, company, businessUnit, window, param1);
+            } else {
+                totalCountSearch = util.format('TOTALCOUNTWOPARAMS:%s:%s:%s:%s', tenant, company, businessUnit, window);
+            }
+        } else if (param2) {
+            if (param2 !== '*') {
+                totalCountSearch = util.format('TOTALCOUNTWLPARAM:%s:%s:%s:%s:%s', tenant, company, businessUnit, window, param2);
+            } else {
+                totalCountSearch = util.format('TOTALCOUNTWOPARAMS:%s:%s:%s:%s', tenant, company, businessUnit, window);
+            }
+        } else {
+            totalCountSearch = util.format('TOTALCOUNTWOPARAMS:%s:%s:%s:%s', tenant, company, businessUnit, window);
+        }
+    }else {
+        if (param1 && param2) {
+            if (param1 !== '*' && param2 !== '*') {
+                totalCountSearch = util.format('TOTALCOUNT:%s:%s:%s:%s:%s', tenant, company, window, param1, param2);
+            } else if (param1 !== '*') {
+                totalCountSearch = util.format('TOTALCOUNTWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
+            } else if (param2 !== '*') {
+                totalCountSearch = util.format('TOTALCOUNTWLPARAM:%s:%s:%s:%s', tenant, company, window, param2);
+            } else {
+                totalCountSearch = util.format('TOTALCOUNTWOPARAMS:%s:%s:%s', tenant, company, window);
+            }
+        } else if (param1) {
+            if (param1 !== '*') {
+                totalCountSearch = util.format('TOTALCOUNTWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
+            } else {
+                totalCountSearch = util.format('TOTALCOUNTWOPARAMS:%s:%s:%s', tenant, company, window);
+            }
+        } else if (param2) {
+            if (param2 !== '*') {
+                totalCountSearch = util.format('TOTALCOUNTWLPARAM:%s:%s:%s:%s', tenant, company, window, param2);
+            } else {
+                totalCountSearch = util.format('TOTALCOUNTWOPARAMS:%s:%s:%s', tenant, company, window);
+            }
+        } else {
             totalCountSearch = util.format('TOTALCOUNTWOPARAMS:%s:%s:%s', tenant, company, window);
         }
-    }else if(param1){
-        if(param1 !== '*'){
-            totalCountSearch = util.format('TOTALCOUNTWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
-        }else{
-            totalCountSearch = util.format('TOTALCOUNTWOPARAMS:%s:%s:%s', tenant, company, window);
-        }
-    }else if(param2){
-        if(param2 !== '*'){
-            totalCountSearch = util.format('TOTALCOUNTWLPARAM:%s:%s:%s:%s', tenant, company, window, param2);
-        }else{
-            totalCountSearch = util.format('TOTALCOUNTWOPARAMS:%s:%s:%s', tenant, company, window);
-        }
-    }else{
-        totalCountSearch = util.format('TOTALCOUNTWOPARAMS:%s:%s:%s', tenant, company, window);
     }
 
     redisHandler.GetObject(totalCountSearch, function(err, result){
@@ -359,7 +415,7 @@ var onGetTotalCount = function(tenant, company, window, param1, param2){
     return deferred.promise;
 };
 
-var onGetTotalTime = function(tenant, company, window, param1, param2){
+var onGetTotalTime = function(tenant, company, businessUnit, window, param1, param2){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetTotalTime Internal method ");
@@ -367,30 +423,59 @@ var onGetTotalTime = function(tenant, company, window, param1, param2){
     var reply = {};
     var totalTimeSearch;
 
-    if(param1 && param2) {
-        if(param1 !== '*' && param2 !== '*') {
-            totalTimeSearch = util.format('TOTALTIME:%s:%s:%s:%s:%s', tenant, company, window, param1, param2);
-        }else if(param1 !== '*'){
-            totalTimeSearch = util.format('TOTALTIMEWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
-        }else if(param2 !== '*'){
-            totalTimeSearch = util.format('TOTALTIMEWLPARAM:%s:%s:%s:%s', tenant, company, window, param2);
-        }else{
+    if(businessUnit && businessUnit !== '*'){
+        if (param1 && param2) {
+            if (param1 !== '*' && param2 !== '*') {
+                totalTimeSearch = util.format('TOTALTIME:%s:%s:%s:%s:%s:%s', tenant, company, businessUnit, window, param1, param2);
+            } else if (param1 !== '*') {
+                totalTimeSearch = util.format('TOTALTIMEWSPARAM:%s:%s:%s:%s:%s', tenant, company, businessUnit, window, param1);
+            } else if (param2 !== '*') {
+                totalTimeSearch = util.format('TOTALTIMEWLPARAM:%s:%s:%s:%s:%s', tenant, company, businessUnit, window, param2);
+            } else {
+                totalTimeSearch = util.format('TOTALTIMEWOPARAMS:%s:%s:%s:%s', tenant, company, businessUnit, window);
+            }
+        } else if (param1) {
+            if (param1 !== '*') {
+                totalTimeSearch = util.format('TOTALTIMEWSPARAM:%s:%s:%s:%s:%s', tenant, company, businessUnit, window, param1);
+            } else {
+                totalTimeSearch = util.format('TOTALTIMEWOPARAMS:%s:%s:%s:%s', tenant, company, businessUnit, window);
+            }
+        } else if (param2) {
+            if (param2 !== '*') {
+                totalTimeSearch = util.format('TOTALTIMEWLPARAM:%s:%s:%s:%s:%s', tenant, company, businessUnit, window, param2);
+            } else {
+                totalTimeSearch = util.format('TOTALTIMEWOPARAMS:%s:%s:%s:%s', tenant, company, businessUnit, window);
+            }
+        } else {
+            totalTimeSearch = util.format('TOTALTIMEWOPARAMS:%s:%s:%s:%s', tenant, company, businessUnit, window);
+        }
+    }else {
+
+        if (param1 && param2) {
+            if (param1 !== '*' && param2 !== '*') {
+                totalTimeSearch = util.format('TOTALTIME:%s:%s:%s:%s:%s', tenant, company, window, param1, param2);
+            } else if (param1 !== '*') {
+                totalTimeSearch = util.format('TOTALTIMEWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
+            } else if (param2 !== '*') {
+                totalTimeSearch = util.format('TOTALTIMEWLPARAM:%s:%s:%s:%s', tenant, company, window, param2);
+            } else {
+                totalTimeSearch = util.format('TOTALTIMEWOPARAMS:%s:%s:%s', tenant, company, window);
+            }
+        } else if (param1) {
+            if (param1 !== '*') {
+                totalTimeSearch = util.format('TOTALTIMEWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
+            } else {
+                totalTimeSearch = util.format('TOTALTIMEWOPARAMS:%s:%s:%s', tenant, company, window);
+            }
+        } else if (param2) {
+            if (param2 !== '*') {
+                totalTimeSearch = util.format('TOTALTIMEWLPARAM:%s:%s:%s:%s', tenant, company, window, param2);
+            } else {
+                totalTimeSearch = util.format('TOTALTIMEWOPARAMS:%s:%s:%s', tenant, company, window);
+            }
+        } else {
             totalTimeSearch = util.format('TOTALTIMEWOPARAMS:%s:%s:%s', tenant, company, window);
         }
-    }else if(param1){
-        if(param1 !== '*'){
-            totalTimeSearch = util.format('TOTALTIMEWSPARAM:%s:%s:%s:%s', tenant, company, window, param1);
-        }else{
-            totalTimeSearch = util.format('TOTALTIMEWOPARAMS:%s:%s:%s', tenant, company, window);
-        }
-    }else if(param2){
-        if(param2 !== '*'){
-            totalTimeSearch = util.format('TOTALTIMEWLPARAM:%s:%s:%s:%s', tenant, company, window, param2);
-        }else{
-            totalTimeSearch = util.format('TOTALTIMEWOPARAMS:%s:%s:%s', tenant, company, window);
-        }
-    }else{
-        totalTimeSearch = util.format('TOTALTIMEWOPARAMS:%s:%s:%s', tenant, company, window);
     }
 
     redisHandler.GetObject(totalTimeSearch, function(err, result){
@@ -449,7 +534,7 @@ var onGetTotalTime = function(tenant, company, window, param1, param2){
     return deferred.promise;
 };
 
-var onGetTotalTimeWithCurrentSessions = function(tenant, company, window, param1, param2){
+var onGetTotalTimeWithCurrentSessions = function(tenant, company, businessUnit, window, param1, param2){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.onGetTotalTimeWithCurrentSessions Internal method ");
@@ -458,7 +543,7 @@ var onGetTotalTimeWithCurrentSessions = function(tenant, company, window, param1
 
     var totalTime = 0;
 
-    onGetCurrentTotalTime(tenant, company, window, param1, param2).then(function(result){
+    onGetCurrentTotalTime(tenant, company, businessUnit, window, param1, param2).then(function(result){
         totalTime = totalTime + result.value;
         return onGetTotalTime(tenant, company, window, param1, param2);
     }).then(function(result){
@@ -480,14 +565,14 @@ var onGetTotalTimeWithCurrentSessions = function(tenant, company, window, param1
     return deferred.promise;
 };
 
-var onGetCurrentTotalTime = function(tenant, company, window, param1, param2){
+var onGetCurrentTotalTime = function(tenant, company, businessUnit, window, param1, param2){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetCurrentMaxTime Internal method ");
 
     var reply = {};
 
-    var currentSessionSearch = util.format('SESSION:%s:%s:%s:*:%s:%s', tenant, company, window, param1, param2);
+    var currentSessionSearch = util.format('SESSION:%s:%s:%s:%s:*:%s:%s', tenant, company, businessUnit, window, param1, param2);
 
     redisHandler.SearchHashes(currentSessionSearch, 'time', function(err, result){
         if(err){
@@ -520,14 +605,14 @@ var onGetCurrentTotalTime = function(tenant, company, window, param1, param2){
     return deferred.promise;
 };
 
-var onGetTotalKeyCount = function(tenant, company, window, param1, param2){
+var onGetTotalKeyCount = function(tenant, company, businessUnit, window, param1, param2){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetTotalKeyCount Internal method ");
 
     var reply = {};
 
-    var totalKeyCountSearch = util.format('TOTALCOUNT:%s:%s:%s:%s:%s', tenant, company, window, param1, param2);
+    var totalKeyCountSearch = util.format('TOTALCOUNT:%s:%s:%s:%s:%s:%s', tenant, company, businessUnit, window, param1, param2);
 
     redisHandler.SearchKeys(totalKeyCountSearch, function(err, result){
         if(err){
@@ -554,7 +639,7 @@ var onGetTotalKeyCount = function(tenant, company, window, param1, param2){
     return deferred.promise;
 };
 
-var onGetAverageTime = function(tenant, company, window, param1, param2){
+var onGetAverageTime = function(tenant, company, businessUnit, window, param1, param2){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetAverageTime Internal method ");
@@ -566,9 +651,9 @@ var onGetAverageTime = function(tenant, company, window, param1, param2){
     var average = 0;
 
 
-    onGetTotalTime(tenant, company, window, param1, param2).then(function(result){
+    onGetTotalTime(tenant, company, businessUnit, window, param1, param2).then(function(result){
         totalTime = totalTime + result.value;
-        return onGetTotalCount(tenant, company, window, param1, param2);
+        return onGetTotalCount(tenant, company, businessUnit, window, param1, param2);
     }).then(function(result){
         totalCount = result.value;
 
@@ -593,7 +678,7 @@ var onGetAverageTime = function(tenant, company, window, param1, param2){
     return deferred.promise;
 };
 
-var onGetAverageCountPerKey = function(tenant, company, countWindow, countParam1, countParam2, keyWindow, keyParam1, keyParam2){
+var onGetAverageCountPerKey = function(tenant, company, businessUnit, countWindow, countParam1, countParam2, keyWindow, keyParam1, keyParam2){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetAverageCountPerKey Internal method ");
@@ -605,9 +690,9 @@ var onGetAverageCountPerKey = function(tenant, company, countWindow, countParam1
     var average = 0;
 
 
-    onGetTotalCount(tenant, company, countWindow, countParam1, countParam2).then(function(result){
+    onGetTotalCount(tenant, company, businessUnit, countWindow, countParam1, countParam2).then(function(result){
         totalCount = totalCount + result.value;
-        return onGetTotalKeyCount(tenant, company, keyWindow, keyParam1, keyParam2);
+        return onGetTotalKeyCount(tenant, company, businessUnit, keyWindow, keyParam1, keyParam2);
     }).then(function(result){
         totalKeys = result.value;
 
@@ -632,7 +717,7 @@ var onGetAverageCountPerKey = function(tenant, company, countWindow, countParam1
     return deferred.promise;
 };
 
-var onGetAverageTimeWithCurrentSessions = function(tenant, company, window, param1, param2){
+var onGetAverageTimeWithCurrentSessions = function(tenant, company, businessUnit, window, param1, param2){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetAverageTime Internal method ");
@@ -643,12 +728,12 @@ var onGetAverageTimeWithCurrentSessions = function(tenant, company, window, para
     var totalCount = 0;
     var average = 0;
 
-    onGetCurrentTotalTime(tenant, company, window, param1, param2).then(function(result){
+    onGetCurrentTotalTime(tenant, company, businessUnit, window, param1, param2).then(function(result){
         totalTime = totalTime + result.value;
-        return onGetTotalTime(tenant, company, window, param1, param2);
+        return onGetTotalTime(tenant, company, businessUnit, window, param1, param2);
     }).then(function(result){
         totalTime = totalTime + result.value;
-        return onGetTotalCount(tenant, company, window, param1, param2);
+        return onGetTotalCount(tenant, company, businessUnit, window, param1, param2);
     }).then(function(result){
         totalCount = result.value;
 
@@ -674,7 +759,7 @@ var onGetAverageTimeWithCurrentSessions = function(tenant, company, window, para
     return deferred.promise;
 };
 
-var onGetAverageTimePerKeyWithCurrentSessions = function(tenant, company, window, param1, param2){
+var onGetAverageTimePerKeyWithCurrentSessions = function(tenant, company, businessUnit, window, param1, param2){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetAverageTime Internal method ");
@@ -685,12 +770,12 @@ var onGetAverageTimePerKeyWithCurrentSessions = function(tenant, company, window
     var totalCount = 0;
     var average = 0;
 
-    onGetCurrentTotalTime(tenant, company, window, param1, param2).then(function(result){
+    onGetCurrentTotalTime(tenant, company, businessUnit, window, param1, param2).then(function(result){
         totalTime = totalTime + result.value;
-        return onGetTotalTime(tenant, company, window, param1, param2);
+        return onGetTotalTime(tenant, company, businessUnit, window, param1, param2);
     }).then(function(result){
         totalTime = totalTime + result.value;
-        return onGetTotalKeyCount(tenant, company, window, param1, param2);
+        return onGetTotalKeyCount(tenant, company, businessUnit, window, param1, param2);
     }).then(function(result){
         totalCount = result.value;
 
@@ -716,7 +801,7 @@ var onGetAverageTimePerKeyWithCurrentSessions = function(tenant, company, window
     return deferred.promise;
 };
 
-var onGetQueueDetails = function(tenant, company){
+var onGetQueueDetails = function(tenant, company, businessUnit){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetQueueDetails Internal method ");
@@ -724,7 +809,7 @@ var onGetQueueDetails = function(tenant, company){
     var reply = {};
     var queueDetailList = [];
 
-    var totalCountSearch = util.format('TOTALCOUNT:%s:%s:%s:*:*', tenant, company, 'QUEUE');
+    var totalCountSearch = util.format('TOTALCOUNT:%s:%s:%s:%s:*:*', tenant, company, businessUnit, 'QUEUE');
 
     redisHandler.SearchKeys(totalCountSearch, function(err, result){
         if(err){
@@ -747,7 +832,7 @@ var onGetQueueDetails = function(tenant, company){
 
                     var count = queueIdList.length;
                     queueIdList.forEach(function (queueId) {
-                        getQueueDetail(tenant, company, queueId).then(function(queueInfo){
+                        getQueueDetail(tenant, company, businessUnit, queueId).then(function(queueInfo){
                             queueDetailList.push(queueInfo);
 
                             if(queueDetailList.length === count){
@@ -786,11 +871,11 @@ var onGetQueueDetails = function(tenant, company){
     return deferred.promise;
 };
 
-var onGetSingleQueueDetails = function(tenant, company, queueId){
+var onGetSingleQueueDetails = function(tenant, company, businessUnit, queueId){
     var deferred = Q.defer();
 
     var reply = {};
-    getQueueDetail(tenant, company, queueId).then(function(queueInfo){
+    getQueueDetail(tenant, company, businessUnit, queueId).then(function(queueInfo){
         reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetSingleQueueDetails: Success", true, queueInfo);
         reply.value = queueInfo;
         deferred.resolve(reply);
@@ -805,7 +890,7 @@ var OnGetMaxTime = function(req,res){
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetMaxTime(tenant, company, req.params.window, req.params.param1, req.params.param2).then(function(result){
+    onGetMaxTime(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function(result){
         res.end(result.jsonString);
     }).catch(function(err){
         console.log(err);
@@ -818,7 +903,7 @@ var OnGetCurrentMaxTime = function(req,res){
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetCurrentMaxTime(tenant, company, req.params.window, req.params.param1, req.params.param2).then(function(result){
+    onGetCurrentMaxTime(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function(result){
         res.end(result.jsonString);
     }).catch(function(err){
         console.log(err);
@@ -831,7 +916,7 @@ var OnGetCurrentCount = function(req,res){
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetCurrentCount(tenant, company, req.params.window, req.params.param1, req.params.param2).then(function(result){
+    onGetCurrentCount(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function(result){
         res.end(result.jsonString);
     }).catch(function(err){
         console.log(err);
@@ -844,7 +929,7 @@ var OnGetAverageTime = function(req, res){
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetAverageTime(tenant, company, req.params.window, req.params.param1, req.params.param2).then(function(result){
+    onGetAverageTime(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function(result){
         res.end(result.jsonString);
     }).catch(function(err){
         console.log(err);
@@ -856,7 +941,7 @@ var OnGetQueueDetails = function(req, res){
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetQueueDetails(tenant, company).then(function(result){
+    onGetQueueDetails(tenant, company, req.params.businessUnit).then(function(result){
         res.end(result.jsonString);
     }).catch(function(err){
         console.log(err);
@@ -868,7 +953,7 @@ var OnGetSingleQueueDetails = function(req, res){
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetSingleQueueDetails(tenant, company, req.params.queueId).then(function(result){
+    onGetSingleQueueDetails(tenant, company, req.params.businessUnit, req.params.queueId).then(function(result){
         res.end(result.jsonString);
     }).catch(function(err){
         console.log(err);
@@ -880,7 +965,7 @@ var OnGetTotalCount = function(req,res){
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetTotalCount(tenant, company, req.params.window, req.params.param1, req.params.param2).then(function(result){
+    onGetTotalCount(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function(result){
         res.end(result.jsonString);
     }).catch(function(err){
         console.log(err);
@@ -893,7 +978,7 @@ var OnGetTotalTime = function(req,res){
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetTotalTime(tenant, company, req.params.window, req.params.param1, req.params.param2).then(function(result){
+    onGetTotalTime(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function(result){
         res.end(result.jsonString);
     }).catch(function(err){
         console.log(err);
@@ -906,7 +991,7 @@ var OnGetTotalTimeWithCurrentSessions = function(req,res){
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetTotalTimeWithCurrentSessions(tenant, company, req.params.window, req.params.param1, req.params.param2).then(function(result){
+    onGetTotalTimeWithCurrentSessions(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function(result){
         res.end(result.jsonString);
     }).catch(function(err){
         console.log(err);
@@ -919,7 +1004,7 @@ var OnGetAverageTimeWithCurrentSessions = function(req,res){
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetAverageTimeWithCurrentSessions(tenant, company, req.params.window, req.params.param1, req.params.param2).then(function(result){
+    onGetAverageTimeWithCurrentSessions(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function(result){
         res.end(result.jsonString);
     }).catch(function(err){
         console.log(err);
@@ -932,7 +1017,7 @@ var OnGetAverageTimePerKeyWithCurrentSessions = function(req,res){
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetAverageTimePerKeyWithCurrentSessions(tenant, company, req.params.window, req.params.param1, req.params.param2).then(function(result){
+    onGetAverageTimePerKeyWithCurrentSessions(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function(result){
         res.end(result.jsonString);
     }).catch(function(err){
         console.log(err);
@@ -945,7 +1030,7 @@ var OnGetAverageCountPerKey = function(req,res){
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetAverageCountPerKey(tenant, company, req.params.countWindow, req.params.countParam1, req.params.countParam2, req.params.keyWindow, req.params.keyParam1, req.params.keyParam2).then(function(result){
+    onGetAverageCountPerKey(tenant, company, req.params.businessUnit, req.params.countWindow, req.params.countParam1, req.params.countParam2, req.params.keyWindow, req.params.keyParam1, req.params.keyParam2).then(function(result){
         res.end(result.jsonString);
     }).catch(function(err){
         console.log(err);
@@ -958,7 +1043,7 @@ var OnGetCountPerKey = function(req,res){
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetTotalKeyCount(tenant, company, req.params.window, req.params.param1, req.params.param2).then(function(result){
+    onGetTotalKeyCount(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function(result){
         res.end(result.jsonString);
     }).catch(function(err){
         console.log(err);

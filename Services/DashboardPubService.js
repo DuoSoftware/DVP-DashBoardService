@@ -69,26 +69,26 @@ function RequestToNotify(company, tenant, roomName, eventName, msgData){
 
 
 
-var collectTotalCount = function(company, tenant, window, eventName, param1, param2){
+var collectTotalCount = function(company, tenant, businessUnit, window, eventName, param1, param2){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.collectTotalCount Internal method ");
 
     var reply = {
         roomData: { roomName: window+':'+eventName, eventName: eventName },
-        DashboardData: {window: window, param1: param1, param2: param2}
+        DashboardData: {businessUnit: businessUnit, window: window, param1: param1, param2: param2}
     };
 
 
-    countService.OnGetTotalCountLib(tenant, company, window, '*', '*').then(function(result){
+    countService.OnGetTotalCountLib(tenant, company, businessUnit, window, '*', '*').then(function(result){
         reply.DashboardData.TotalCountWindow = result.value;
-        return countService.OnGetTotalCountLib(tenant, company, window, param1, '*');
+        return countService.OnGetTotalCountLib(tenant, company, businessUnit, window, param1, '*');
     }).then(function(result){
         reply.DashboardData.TotalCountParam1 = result.value;
-        return countService.OnGetTotalCountLib(tenant, company, window, '*', param2);
+        return countService.OnGetTotalCountLib(tenant, company, businessUnit, window, '*', param2);
     }).then(function(result){
         reply.DashboardData.TotalCountParam2 = result.value;
-        return countService.OnGetTotalCountLib(tenant, company, window, param1, param2);
+        return countService.OnGetTotalCountLib(tenant, company, businessUnit, window, param1, param2);
     }).then(function(result){
         reply.DashboardData.TotalCountAllParams = result.value;
         deferred.resolve(reply);
@@ -100,26 +100,26 @@ var collectTotalCount = function(company, tenant, window, eventName, param1, par
     return deferred.promise;
 };
 
-var collectCurrentCount = function(company, tenant, window, eventName, param1, param2){
+var collectCurrentCount = function(company, tenant, businessUnit, window, eventName, param1, param2){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.collectCurrentCount Internal method ");
 
     var reply = {
         roomData: { roomName: window+':'+eventName, eventName: eventName },
-        DashboardData: {window: window, param1: param1, param2: param2}
+        DashboardData: {businessUnit: businessUnit, window: window, param1: param1, param2: param2}
     };
 
 
-    countService.OnGetCurrentCountLib(tenant, company, window, '*', '*').then(function(result){
+    countService.OnGetCurrentCountLib(tenant, company, businessUnit, window, '*', '*').then(function(result){
         reply.DashboardData.CurrentCountWindow = result.value;
-        return countService.OnGetCurrentCountLib(tenant, company, window, param1, '*');
+        return countService.OnGetCurrentCountLib(tenant, company, businessUnit, window, param1, '*');
     }).then(function(result){
         reply.DashboardData.CurrentCountParam1 = result.value;
-        return countService.OnGetCurrentCountLib(tenant, company, window, '*', param2);
+        return countService.OnGetCurrentCountLib(tenant, company, businessUnit, window, '*', param2);
     }).then(function(result){
         reply.DashboardData.CurrentCountParam2 = result.value;
-        return countService.OnGetCurrentCountLib(tenant, company, window, param1, param2);
+        return countService.OnGetCurrentCountLib(tenant, company, businessUnit, window, param1, param2);
     }).then(function(result){
         reply.DashboardData.CurrentCountAllParams = result.value;
         deferred.resolve(reply);
@@ -131,26 +131,26 @@ var collectCurrentCount = function(company, tenant, window, eventName, param1, p
     return deferred.promise;
 };
 
-var collectTotalTime = function(company, tenant, window, eventName, param1, param2){
+var collectTotalTime = function(company, tenant, businessUnit, window, eventName, param1, param2){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.collectTotalTime Internal method ");
 
     var reply = {
         roomData: { roomName: window+':'+eventName, eventName: eventName },
-        DashboardData: {window: window, param1: param1, param2: param2}
+        DashboardData: {businessUnit: businessUnit, window: window, param1: param1, param2: param2}
     };
 
 
-    countService.OnGetTotalTimeLib(tenant, company, window, '*', '*').then(function(result){
+    countService.OnGetTotalTimeLib(tenant, company, businessUnit, window, '*', '*').then(function(result){
         reply.DashboardData.TotalTimeWindow = result.value;
-        return countService.OnGetTotalTimeLib(tenant, company, window, param1, '*');
+        return countService.OnGetTotalTimeLib(tenant, company, businessUnit, window, param1, '*');
     }).then(function(result){
         reply.DashboardData.TotalTimeParam1 = result.value;
-        return countService.OnGetTotalTimeLib(tenant, company, window, '*', param2);
+        return countService.OnGetTotalTimeLib(tenant, company, businessUnit, window, '*', param2);
     }).then(function(result){
         reply.DashboardData.TotalTimeParam2 = result.value;
-        return countService.OnGetTotalTimeLib(tenant, company, window, param1, param2);
+        return countService.OnGetTotalTimeLib(tenant, company, businessUnit, window, param1, param2);
     }).then(function(result){
         reply.DashboardData.TotalTimeAllParams = result.value;
         deferred.resolve(reply);
@@ -162,26 +162,26 @@ var collectTotalTime = function(company, tenant, window, eventName, param1, para
     return deferred.promise;
 };
 
-var collectMaxTime = function(company, tenant, window, eventName, param1, param2){
+var collectMaxTime = function(company, tenant, businessUnit, window, eventName, param1, param2){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.collectMaxTime Internal method ");
 
     var reply = {
         roomData: { roomName: window+':'+eventName, eventName: eventName },
-        DashboardData: {window: window, param1: param1, param2: param2}
+        DashboardData: {businessUnit: businessUnit, window: window, param1: param1, param2: param2}
     };
 
 
-    countService.OnGetMaxTimeLib(tenant, company, window, '*', '*').then(function(result){
+    countService.OnGetMaxTimeLib(tenant, company, businessUnit, window, '*', '*').then(function(result){
         reply.DashboardData.MaxTimeWindow = result.value;
-        return countService.OnGetMaxTimeLib(tenant, company, window, param1, '*');
+        return countService.OnGetMaxTimeLib(tenant, company, businessUnit, window, param1, '*');
     }).then(function(result){
         reply.DashboardData.MaxTimeParam1 = result.value;
-        return countService.OnGetMaxTimeLib(tenant, company, window, '*', param2);
+        return countService.OnGetMaxTimeLib(tenant, company, businessUnit, window, '*', param2);
     }).then(function(result){
         reply.DashboardData.MaxTimeParam2 = result.value;
-        return countService.OnGetMaxTimeLib(tenant, company, window, param1, param2);
+        return countService.OnGetMaxTimeLib(tenant, company, businessUnit, window, param1, param2);
     }).then(function(result){
         reply.DashboardData.MaxTimeAllParams = result.value;
         deferred.resolve(reply);
@@ -193,26 +193,26 @@ var collectMaxTime = function(company, tenant, window, eventName, param1, param2
     return deferred.promise;
 };
 
-var collectCurrentMaxTime = function(company, tenant, window, eventName, param1, param2){
+var collectCurrentMaxTime = function(company, tenant, businessUnit, window, eventName, param1, param2){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.collectCurrentMaxTime Internal method ");
 
     var reply = {
         roomData: { roomName: window+':'+eventName, eventName: eventName },
-        DashboardData: {window: window, param1: param1, param2: param2}
+        DashboardData: {businessUnit: businessUnit, window: window, param1: param1, param2: param2}
     };
 
 
-    countService.OnGetCurrentMaxTimeLib(tenant, company, window, '*', '*').then(function(result){
+    countService.OnGetCurrentMaxTimeLib(tenant, company, businessUnit, window, '*', '*').then(function(result){
         reply.DashboardData.CurrentMaxTimeWindow = result.value;
-        return countService.OnGetCurrentMaxTimeLib(tenant, company, window, param1, '*');
+        return countService.OnGetCurrentMaxTimeLib(tenant, company, businessUnit, window, param1, '*');
     }).then(function(result){
         reply.DashboardData.CurrentMaxTimeParam1 = result.value;
-        return countService.OnGetCurrentMaxTimeLib(tenant, company, window, '*', param2);
+        return countService.OnGetCurrentMaxTimeLib(tenant, company, businessUnit, window, '*', param2);
     }).then(function(result){
         reply.DashboardData.CurrentMaxTimeParam2 = result.value;
-        return countService.OnGetCurrentMaxTimeLib(tenant, company, window, param1, param2);
+        return countService.OnGetCurrentMaxTimeLib(tenant, company, businessUnit, window, param1, param2);
     }).then(function(result){
         reply.DashboardData.CurrentMaxTimeAllParams = result.value;
         deferred.resolve(reply);
@@ -224,26 +224,26 @@ var collectCurrentMaxTime = function(company, tenant, window, eventName, param1,
     return deferred.promise;
 };
 
-var collectAverageTime = function(company, tenant, window, eventName, param1, param2){
+var collectAverageTime = function(company, tenant, businessUnit, window, eventName, param1, param2){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.collectAverageTime Internal method ");
 
     var reply = {
         roomData: { roomName: window+':'+eventName, eventName: eventName },
-        DashboardData: {window: window, param1: param1, param2: param2}
+        DashboardData: {businessUnit: businessUnit, window: window, param1: param1, param2: param2}
     };
 
 
-    countService.OnGetAverageTimeLib(tenant, company, window, '*', '*').then(function(result){
+    countService.OnGetAverageTimeLib(tenant, company, businessUnit, window, '*', '*').then(function(result){
         reply.DashboardData.AverageTimeWindow = result.value;
-        return countService.OnGetAverageTimeLib(tenant, company, window, param1, '*');
+        return countService.OnGetAverageTimeLib(tenant, company, businessUnit, window, param1, '*');
     }).then(function(result){
         reply.DashboardData.AverageTimeParam1 = result.value;
-        return countService.OnGetAverageTimeLib(tenant, company, window, '*', param2);
+        return countService.OnGetAverageTimeLib(tenant, company, businessUnit, window, '*', param2);
     }).then(function(result){
         reply.DashboardData.AverageTimeParam2 = result.value;
-        return countService.OnGetAverageTimeLib(tenant, company, window, param1, param2);
+        return countService.OnGetAverageTimeLib(tenant, company, businessUnit, window, param1, param2);
     }).then(function(result){
         reply.DashboardData.AverageTimeAllParams = result.value;
         deferred.resolve(reply);
@@ -255,19 +255,19 @@ var collectAverageTime = function(company, tenant, window, eventName, param1, pa
     return deferred.promise;
 };
 
-var collectQueueDetails = function(company, tenant, window, eventName){
+var collectQueueDetails = function(company, tenant, businessUnit, window, eventName){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.collectQueueDetails Internal method ");
 
     var reply = {
         roomData: { roomName: window+':'+eventName, eventName: eventName },
-        DashboardData: []
+        DashboardData: {businessUnit: businessUnit, queueDetails: []}
     };
 
 
-    countService.OnGetQueueDetailsLib(tenant, company).then(function(result){
-        reply.DashboardData = result.value;
+    countService.OnGetQueueDetailsLib(tenant, company, businessUnit).then(function(result){
+        reply.DashboardData.queueDetails = result.value;
         deferred.resolve(reply);
     }).catch(function(err){
         logger.error('collectQueueDetails: Error:: '+err);
@@ -277,19 +277,19 @@ var collectQueueDetails = function(company, tenant, window, eventName){
     return deferred.promise;
 };
 
-var collectSingleQueueDetails = function(company, tenant, window, eventName, queueId){
+var collectSingleQueueDetails = function(company, tenant, businessUnit, window, eventName, queueId){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.collectSingleQueueDetails Internal method ");
 
     var reply = {
         roomData: { roomName: window+':'+eventName, eventName: eventName },
-        DashboardData: {}
+        DashboardData: {businessUnit: businessUnit, queueDetail: {}}
     };
 
 
-    countService.OnGetSingleQueueDetailsLib(tenant, company, queueId).then(function(result){
-        reply.DashboardData = result.value;
+    countService.OnGetSingleQueueDetailsLib(tenant, company, businessUnit, queueId).then(function(result){
+        reply.DashboardData.queueDetail = result.value;
         deferred.resolve(reply);
     }).catch(function(err){
         logger.error('collectSingleQueueDetails: Error:: '+err);
@@ -299,26 +299,26 @@ var collectSingleQueueDetails = function(company, tenant, window, eventName, que
     return deferred.promise;
 };
 
-var collectTotalKeyCount = function(company, tenant, window, eventName, param1, param2){
+var collectTotalKeyCount = function(company, tenant, businessUnit, window, eventName, param1, param2){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.collectTotalKeyCount Internal method ");
 
     var reply = {
         roomData: { roomName: window+':'+eventName, eventName: eventName },
-        DashboardData: {window: window, param1: param1, param2: param2}
+        DashboardData: {businessUnit: businessUnit, window: window, param1: param1, param2: param2}
     };
 
 
-    countService.OnGetCountPerKeyLib(tenant, company, window, '*', '*').then(function(result){
+    countService.OnGetCountPerKeyLib(tenant, company, businessUnit, window, '*', '*').then(function(result){
         reply.DashboardData.TotalCountWindow = result.value;
-        return countService.OnGetCountPerKeyLib(tenant, company, window, param1, '*');
+        return countService.OnGetCountPerKeyLib(tenant, company, businessUnit, window, param1, '*');
     }).then(function(result){
         reply.DashboardData.TotalCountParam1 = result.value;
-        return countService.OnGetCountPerKeyLib(tenant, company, window, '*', param2);
+        return countService.OnGetCountPerKeyLib(tenant, company, businessUnit, window, '*', param2);
     }).then(function(result){
         reply.DashboardData.TotalCountParam2 = result.value;
-        return countService.OnGetCountPerKeyLib(tenant, company, window, param1, param2);
+        return countService.OnGetCountPerKeyLib(tenant, company, businessUnit, window, param1, param2);
     }).then(function(result){
         reply.DashboardData.TotalCountAllParams = result.value;
         deferred.resolve(reply);
@@ -330,26 +330,26 @@ var collectTotalKeyCount = function(company, tenant, window, eventName, param1, 
     return deferred.promise;
 };
 
-var collectTotalTimeWithCurrentSession = function(company, tenant, window, eventName, param1, param2){
+var collectTotalTimeWithCurrentSession = function(company, tenant, businessUnit, window, eventName, param1, param2){
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.collectTotalTimeWithCurrentSession Internal method ");
 
     var reply = {
         roomData: { roomName: window+':'+eventName, eventName: eventName },
-        DashboardData: {window: window, param1: param1, param2: param2}
+        DashboardData: {businessUnit: businessUnit, window: window, param1: param1, param2: param2}
     };
 
 
-    countService.OnGetTotalTimeWithCurrentSessionsLib(tenant, company, window, '*', '*').then(function(result){
+    countService.OnGetTotalTimeWithCurrentSessionsLib(tenant, company, businessUnit, window, '*', '*').then(function(result){
         reply.DashboardData.TotalTimeWindow = result.value;
-        return countService.OnGetTotalTimeWithCurrentSessionsLib(tenant, company, window, param1, '*');
+        return countService.OnGetTotalTimeWithCurrentSessionsLib(tenant, company, businessUnit, window, param1, '*');
     }).then(function(result){
         reply.DashboardData.TotalTimeParam1 = result.value;
-        return countService.OnGetTotalTimeWithCurrentSessionsLib(tenant, company, window, '*', param2);
+        return countService.OnGetTotalTimeWithCurrentSessionsLib(tenant, company, businessUnit, window, '*', param2);
     }).then(function(result){
         reply.DashboardData.TotalTimeParam2 = result.value;
-        return countService.OnGetTotalTimeWithCurrentSessionsLib(tenant, company, window, param1, param2);
+        return countService.OnGetTotalTimeWithCurrentSessionsLib(tenant, company, businessUnit, window, param1, param2);
     }).then(function(result){
         reply.DashboardData.TotalTimeAllParams = result.value;
         deferred.resolve(reply);
@@ -374,34 +374,34 @@ var publishDashboardData = function (req, res) {
             dbPubMeta.forEach(function (pubMeta) {
                 switch (pubMeta.EventName){
                     case 'TotalCount':
-                        asyncFuncArray.push(collectTotalCount(company, tenant, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                        asyncFuncArray.push(collectTotalCount(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
                         break;
                     case 'CurrentCount':
-                        asyncFuncArray.push(collectCurrentCount(company, tenant, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                        asyncFuncArray.push(collectCurrentCount(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
                         break;
                     case 'TotalTime':
-                        asyncFuncArray.push(collectTotalTime(company, tenant, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                        asyncFuncArray.push(collectTotalTime(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
                         break;
                     case 'MaxWaiting':
-                        asyncFuncArray.push(collectMaxTime(company, tenant, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                        asyncFuncArray.push(collectMaxTime(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
                         break;
                     case 'CurrentMaxTime':
-                        asyncFuncArray.push(collectCurrentMaxTime(company, tenant, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                        asyncFuncArray.push(collectCurrentMaxTime(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
                         break;
                     case 'AverageTime':
-                        asyncFuncArray.push(collectAverageTime(company, tenant, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                        asyncFuncArray.push(collectAverageTime(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
                         break;
                     case 'QueueDetails':
-                        asyncFuncArray.push(collectQueueDetails(company, tenant, 'QUEUE', pubMeta.EventName));
+                        asyncFuncArray.push(collectQueueDetails(company, tenant, req.params.businessUnit, 'QUEUE', pubMeta.EventName));
                         break;
                     case 'QueueDetail':
-                        asyncFuncArray.push(collectSingleQueueDetails(company, tenant, 'QUEUE', pubMeta.EventName, req.params.param1));
+                        asyncFuncArray.push(collectSingleQueueDetails(company, tenant, req.params.businessUnit, 'QUEUE', pubMeta.EventName, req.params.param1));
                         break;
                     case 'TotalKeyCount':
-                        asyncFuncArray.push(collectTotalKeyCount(company, tenant, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                        asyncFuncArray.push(collectTotalKeyCount(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
                         break;
                     case 'TotalTimeWithCurrentSession':
-                        asyncFuncArray.push(collectTotalTimeWithCurrentSession(company, tenant, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                        asyncFuncArray.push(collectTotalTimeWithCurrentSession(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
                         break;
                     default :
                         break;
