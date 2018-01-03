@@ -821,8 +821,8 @@ var onGetQueueDetails = function(tenant, company, businessUnit){
                 var queueIdList = [];
                 for(var i=0; i< result.length; i++){
                     var keyItems = result[i].split(':');
-                    if(keyItems.length >= 5){
-                        queueIdList.push(keyItems[4]);
+                    if(keyItems.length >= 6){
+                        queueIdList.push(keyItems[5]);
                     }
                 }
 
