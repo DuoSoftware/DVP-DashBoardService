@@ -34,7 +34,7 @@ var OnGetCalls = function(req,res){
 
     var jsonString;
 
-    var url = util.format("http://%s/render?target=sumSeries(stats.event.common.concurrent.%d.%d.*.CALLS)&from=-%dmin&format=json", statsDIp, tenant, company, req.params.duration);
+    var url = util.format("http://%s/render?target=sumSeries(stats.event.common.concurrent.%d.%d.%s.*.CALLS)&from=-%dmin&format=json", statsDIp, tenant, company, req.params.businessUnit, req.params.duration);
     DoGet(url, function(err, httpResponse, body){
         if(err){
             jsonString = messageFormatter.FormatMessage(err, "Graph:OnGetCalls: Failed", false, undefined);
@@ -59,7 +59,7 @@ var OnGetChannels = function(req,res){
 
     var jsonString;
 
-    var url = util.format("http://%s/render?target=sumSeries(stats.event.common.concurrent.%d.%d.*.CALLCHANNELS)&from=-%dmin&format=json", statsDIp, tenant, company, req.params.duration);
+    var url = util.format("http://%s/render?target=sumSeries(stats.event.common.concurrent.%d.%d.%s.*.CALLCHANNELS)&from=-%dmin&format=json", statsDIp, tenant, company, req.params.businessUnit, req.params.duration);
     DoGet(url, function(err, httpResponse, body){
         if(err){
             jsonString = messageFormatter.FormatMessage(err, "Graph:OnGetChannels: Failed", false, undefined);
@@ -84,7 +84,7 @@ var OnGetBridge = function(req,res){
 
     var jsonString;
 
-    var url = util.format("http://%s/render?target=sumSeries(stats.event.common.concurrent.%d.%d.*.BRIDGE)&from=-%dmin&format=json", statsDIp, tenant, company, req.params.duration);
+    var url = util.format("http://%s/render?target=sumSeries(stats.event.common.concurrent.%d.%d.%s.*.BRIDGE)&from=-%dmin&format=json", statsDIp, tenant, company, req.params.businessUnit, req.params.duration);
     DoGet(url, function(err, httpResponse, body){
         if(err){
             jsonString = messageFormatter.FormatMessage(err, "Graph:OnGetBridge: Failed", false, undefined);
@@ -109,7 +109,7 @@ var OnGetQueued = function(req,res){
 
     var jsonString;
 
-    var url = util.format("http://%s/render?target=sumSeries(stats.event.common.concurrent.%d.%d.*.QUEUE)&from=-%dmin&format=json", statsDIp, tenant, company, req.params.duration);
+    var url = util.format("http://%s/render?target=sumSeries(stats.event.common.concurrent.%d.%d.%s.*.QUEUE)&from=-%dmin&format=json", statsDIp, tenant, company, req.params.businessUnit, req.params.duration);
     DoGet(url, function(err, httpResponse, body){
         if(err){
             jsonString = messageFormatter.FormatMessage(err, "Graph:OnGetQueued: Failed", false, undefined);
@@ -134,7 +134,7 @@ var OnGetConcurrentQueue = function(req,res){
 
     var jsonString;
 
-    var url = util.format("http://%s/render?target=stats.gauges.event.common.concurrent.%d.%d.%s.QUEUE&from=-%dmin&format=json", statsDIp, tenant, company, req.params.queue, req.params.duration);
+    var url = util.format("http://%s/render?target=stats.gauges.event.common.concurrent.%d.%d.%s.%s.QUEUE&from=-%dmin&format=json", statsDIp, tenant, company, req.params.businessUnit, req.params.queue, req.params.duration);
     DoGet(url, function(err, httpResponse, body){
         if(err){
             jsonString = messageFormatter.FormatMessage(err, "Graph:OnGetConcurrentQueue: Failed", false, undefined);
@@ -159,7 +159,7 @@ var OnGetConcurrentQueueTotal = function(req,res){
 
     var jsonString;
 
-    var url = util.format("http://%s/render?target=sumSeries(stats.gauges.event.common.concurrent.%d.%d.*.QUEUE)&from=-%dmin&format=json", statsDIp, tenant, company, req.params.duration);
+    var url = util.format("http://%s/render?target=sumSeries(stats.gauges.event.common.concurrent.%d.%d.%s.*.QUEUE)&from=-%dmin&format=json", statsDIp, tenant, company, req.params.businessUnit, req.params.duration);
     DoGet(url, function(err, httpResponse, body){
         if(err){
             jsonString = messageFormatter.FormatMessage(err, "Graph:OnGetConcurrentQueueTotal: Failed", false, undefined);
@@ -184,7 +184,7 @@ var OnGetTotalNewTicket = function(req,res){
 
     var jsonString;
 
-    var url = util.format("http://%s/render?target=summarize(sumSeries(stats.gauges.event.ticket.totalcount.%d.%d.total.NEWTICKET),\"1d\",\"max\",true)&from=-%dd&format=json", statsDIp, tenant, company, req.params.duration);
+    var url = util.format("http://%s/render?target=summarize(sumSeries(stats.gauges.event.ticket.totalcount.%d.%d.%s.total.NEWTICKET),\"1d\",\"max\",true)&from=-%dd&format=json", statsDIp, tenant, company, req.params.businessUnit, req.params.duration);
     DoGet(url, function(err, httpResponse, body){
         if(err){
             jsonString = messageFormatter.FormatMessage(err, "Graph:OnGetTotalNewTicket: Failed", false, undefined);
@@ -209,7 +209,7 @@ var OnGetTotalClosedTicket = function(req,res){
 
     var jsonString;
 
-    var url = util.format("http://%s/render?target=summarize(sumSeries(stats.gauges.event.ticket.totalcount.%d.%d.total.CLOSEDTICKET),\"1d\",\"max\",true)&from=-%dd&format=json", statsDIp, tenant, company, req.params.duration);
+    var url = util.format("http://%s/render?target=summarize(sumSeries(stats.gauges.event.ticket.totalcount.%d.%d.%s.total.CLOSEDTICKET),\"1d\",\"max\",true)&from=-%dd&format=json", statsDIp, tenant, company, req.params.businessUnit, req.params.duration);
     DoGet(url, function(err, httpResponse, body){
         if(err){
             jsonString = messageFormatter.FormatMessage(err, "Graph:OnGetTotalClosedTicket: Failed", false, undefined);
@@ -234,7 +234,7 @@ var OnGetDiffClosedVsNew = function(req,res){
 
     var jsonString;
 
-    var url = util.format("http://%s/render?target=summarize(diffSeries(stats.gauges.event.ticket.totalcount.%d.%d.total.NEWTICKET,stats.gauges.event.ticket.totalcount.%d.%d.total.CLOSEDTICKET),\"1d\",\"max\",true)&from=-%dd&format=json", statsDIp, tenant, company, tenant, company, req.params.duration);
+    var url = util.format("http://%s/render?target=summarize(diffSeries(stats.gauges.event.ticket.totalcount.%d.%d.%s.total.NEWTICKET,stats.gauges.event.ticket.totalcount.%d.%d.%s.total.CLOSEDTICKET),\"1d\",\"max\",true)&from=-%dd&format=json", statsDIp, tenant, company, req.params.businessUnit, tenant, company, req.params.businessUnit, req.params.duration);
     DoGet(url, function(err, httpResponse, body){
         if(err){
             jsonString = messageFormatter.FormatMessage(err, "Graph:OnGetDiffClosedVsNew: Failed", false, undefined);
@@ -262,7 +262,7 @@ var OnGetTotalNewTicketByUser = function(req,res){
 
     var jsonString;
 
-    var url = util.format("http://%s/render?target=summarize(sumSeries(stats.gauges.event.ticket.totalcount.%d.%d.user_%s.NEWTICKET),\"1d\",\"max\",true)&from=-%dd&format=json", statsDIp, tenant, company, iss, req.params.duration);
+    var url = util.format("http://%s/render?target=summarize(sumSeries(stats.gauges.event.ticket.totalcount.%d.%d.%s.user_%s.NEWTICKET),\"1d\",\"max\",true)&from=-%dd&format=json", statsDIp, tenant, company, req.params.businessUnit, iss, req.params.duration);
     DoGet(url, function(err, httpResponse, body){
         if(err){
             jsonString = messageFormatter.FormatMessage(err, "Graph:OnGetTotalNewTicketByUser: Failed", false, undefined);
@@ -288,7 +288,7 @@ var OnGetTotalClosedTicketByUser = function(req,res){
     iss = iss.replace(/@/g, "");
     var jsonString;
 
-    var url = util.format("http://%s/render?target=summarize(sumSeries(stats.gauges.event.ticket.totalcount.%d.%d.user_%s.CLOSEDTICKET),\"1d\",\"max\",true)&from=-%dd&format=json", statsDIp, tenant, company, iss, req.params.duration);
+    var url = util.format("http://%s/render?target=summarize(sumSeries(stats.gauges.event.ticket.totalcount.%d.%d.%s.user_%s.CLOSEDTICKET),\"1d\",\"max\",true)&from=-%dd&format=json", statsDIp, tenant, company, req.params.businessUnit, iss, req.params.duration);
     DoGet(url, function(err, httpResponse, body){
         if(err){
             jsonString = messageFormatter.FormatMessage(err, "Graph:OnGetTotalClosedTicketByUser: Failed", false, undefined);
@@ -314,7 +314,7 @@ var OnGetDiffClosedVsNewByUser = function(req,res){
     iss = iss.replace(/@/g, "");
     var jsonString;
 
-    var url = util.format("http://%s/render?target=summarize(diffSeries(stats.gauges.event.ticket.totalcount.%d.%d.user_%s.NEWTICKET,stats.gauges.event.ticket.totalcount.%d.%d.user_%s.CLOSEDTICKET),\"1d\",\"max\",true)&from=-%dd&format=json", statsDIp, tenant, company, iss, tenant, company, iss, req.params.duration);
+    var url = util.format("http://%s/render?target=summarize(diffSeries(stats.gauges.event.ticket.totalcount.%d.%d.%s.user_%s.NEWTICKET,stats.gauges.event.ticket.totalcount.%d.%d.%s.user_%s.CLOSEDTICKET),\"1d\",\"max\",true)&from=-%dd&format=json", statsDIp, tenant, company, req.params.businessUnit, iss, tenant, company, req.params.businessUnit, iss, req.params.duration);
     DoGet(url, function(err, httpResponse, body){
         if(err){
             jsonString = messageFormatter.FormatMessage(err, "Graph:OnGetDiffClosedVsNewByUser: Failed", false, undefined);
