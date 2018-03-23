@@ -76,7 +76,7 @@ var collectTotalCount = function(company, tenant, businessUnit, window, eventNam
 
     var reply = {
         roomData: { roomName: window+':'+eventName, eventName: eventName },
-        DashboardData: {businessUnit: businessUnit, window: window, param1: param1, param2: param2}
+        DashboardData: {businessUnit: (businessUnit === "*")? "all": businessUnit, window: window, param1: param1, param2: param2}
     };
 
 
@@ -107,7 +107,7 @@ var collectCurrentCount = function(company, tenant, businessUnit, window, eventN
 
     var reply = {
         roomData: { roomName: window+':'+eventName, eventName: eventName },
-        DashboardData: {businessUnit: businessUnit, window: window, param1: param1, param2: param2}
+        DashboardData: {businessUnit: (businessUnit === "*")? "all": businessUnit, window: window, param1: param1, param2: param2}
     };
 
 
@@ -138,7 +138,7 @@ var collectTotalTime = function(company, tenant, businessUnit, window, eventName
 
     var reply = {
         roomData: { roomName: window+':'+eventName, eventName: eventName },
-        DashboardData: {businessUnit: businessUnit, window: window, param1: param1, param2: param2}
+        DashboardData: {businessUnit: (businessUnit === "*")? "all": businessUnit, window: window, param1: param1, param2: param2}
     };
 
 
@@ -169,7 +169,7 @@ var collectMaxTime = function(company, tenant, businessUnit, window, eventName, 
 
     var reply = {
         roomData: { roomName: window+':'+eventName, eventName: eventName },
-        DashboardData: {businessUnit: businessUnit, window: window, param1: param1, param2: param2}
+        DashboardData: {businessUnit: (businessUnit === "*")? "all": businessUnit, window: window, param1: param1, param2: param2}
     };
 
 
@@ -200,7 +200,7 @@ var collectCurrentMaxTime = function(company, tenant, businessUnit, window, even
 
     var reply = {
         roomData: { roomName: window+':'+eventName, eventName: eventName },
-        DashboardData: {businessUnit: businessUnit, window: window, param1: param1, param2: param2}
+        DashboardData: {businessUnit: (businessUnit === "*")? "all": businessUnit, window: window, param1: param1, param2: param2}
     };
 
 
@@ -231,7 +231,7 @@ var collectAverageTime = function(company, tenant, businessUnit, window, eventNa
 
     var reply = {
         roomData: { roomName: window+':'+eventName, eventName: eventName },
-        DashboardData: {businessUnit: businessUnit, window: window, param1: param1, param2: param2}
+        DashboardData: {businessUnit: (businessUnit === "*")? "all": businessUnit, window: window, param1: param1, param2: param2}
     };
 
 
@@ -262,7 +262,7 @@ var collectQueueDetails = function(company, tenant, businessUnit, window, eventN
 
     var reply = {
         roomData: { roomName: window+':'+eventName, eventName: eventName },
-        DashboardData: {businessUnit: businessUnit, queueDetails: []}
+        DashboardData: {businessUnit: (businessUnit === "*")? "all": businessUnit, queueDetails: []}
     };
 
 
@@ -284,7 +284,7 @@ var collectSingleQueueDetails = function(company, tenant, businessUnit, window, 
 
     var reply = {
         roomData: { roomName: window+':'+eventName, eventName: eventName },
-        DashboardData: {businessUnit: businessUnit, queueDetail: {}}
+        DashboardData: {businessUnit: (businessUnit === "*")? "all": businessUnit, queueDetail: {}}
     };
 
 
@@ -306,7 +306,7 @@ var collectTotalKeyCount = function(company, tenant, businessUnit, window, event
 
     var reply = {
         roomData: { roomName: window+':'+eventName, eventName: eventName },
-        DashboardData: {businessUnit: businessUnit, window: window, param1: param1, param2: param2}
+        DashboardData: {businessUnit: (businessUnit === "*")? "all": businessUnit, window: window, param1: param1, param2: param2}
     };
 
 
@@ -337,7 +337,7 @@ var collectTotalTimeWithCurrentSession = function(company, tenant, businessUnit,
 
     var reply = {
         roomData: { roomName: window+':'+eventName, eventName: eventName },
-        DashboardData: {businessUnit: businessUnit, window: window, param1: param1, param2: param2}
+        DashboardData: {businessUnit: (businessUnit === "*")? "all": businessUnit, window: window, param1: param1, param2: param2}
     };
 
 
