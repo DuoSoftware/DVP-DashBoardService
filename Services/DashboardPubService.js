@@ -67,7 +67,20 @@ function RequestToNotify(company, tenant, roomName, eventName, msgData){
 
 
 
+var setResetAll = function(company, tenant, businessUnit, window, eventName, param1, param2){
+    var deferred = Q.defer();
 
+    logger.info("DVP-DashboardService.setResetAll Internal method ");
+
+    var reply = {
+        roomData: { roomName: window+':'+eventName, eventName: eventName },
+        DashboardData: {businessUnit: (businessUnit === "*")? "all": businessUnit, window: window, param1: param1, param2: param2}
+    };
+
+    return reply;
+
+    return deferred.promise;
+};
 
 var collectTotalCount = function(company, tenant, businessUnit, window, eventName, param1, param2){
     var deferred = Q.defer();
@@ -371,42 +384,60 @@ var publishDashboardData = function (req, res) {
     }).then(function (dbPubMeta) {
         if (dbPubMeta) {
             var asyncFuncArray = [];
-            dbPubMeta.forEach(function (pubMeta) {
-                switch (pubMeta.EventName){
-                    case 'TotalCount':
-                        asyncFuncArray.push(collectTotalCount(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
-                        break;
-                    case 'CurrentCount':
-                        asyncFuncArray.push(collectCurrentCount(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
-                        break;
-                    case 'TotalTime':
-                        asyncFuncArray.push(collectTotalTime(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
-                        break;
-                    case 'MaxWaiting':
-                        asyncFuncArray.push(collectMaxTime(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
-                        break;
-                    case 'CurrentMaxTime':
-                        asyncFuncArray.push(collectCurrentMaxTime(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
-                        break;
-                    case 'AverageTime':
-                        asyncFuncArray.push(collectAverageTime(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
-                        break;
-                    case 'QueueDetails':
-                        asyncFuncArray.push(collectQueueDetails(company, tenant, req.params.businessUnit, 'QUEUE', pubMeta.EventName));
-                        break;
-                    case 'QueueDetail':
-                        asyncFuncArray.push(collectSingleQueueDetails(company, tenant, req.params.businessUnit, 'QUEUE', pubMeta.EventName, req.params.param1));
-                        break;
-                    case 'TotalKeyCount':
-                        asyncFuncArray.push(collectTotalKeyCount(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
-                        break;
-                    case 'TotalTimeWithCurrentSession':
-                        asyncFuncArray.push(collectTotalTimeWithCurrentSession(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
-                        break;
-                    default :
-                        break;
-                }
-            });
+
+            let result = dbPubMeta.filter(obj => {
+                return obj.WindowName === 'QUEUE' && obj.EventName ==='ResetAll';
+            })
+
+            if(result)
+            {
+                asyncFuncArray.push(setResetAll(company, tenant, req.params.businessUnit, req.params.window, result[0].EventName, req.params.param1, req.params.param2));
+            }
+            else
+            {
+                dbPubMeta.forEach(function (pubMeta) {
+
+
+                    switch (pubMeta.EventName){
+                        case 'TotalCount':
+                            asyncFuncArray.push(collectTotalCount(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                            break;
+                        case 'CurrentCount':
+                            asyncFuncArray.push(collectCurrentCount(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                            break;
+                        case 'TotalTime':
+                            asyncFuncArray.push(collectTotalTime(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                            break;
+                        case 'MaxWaiting':
+                            asyncFuncArray.push(collectMaxTime(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                            break;
+                        case 'CurrentMaxTime':
+                            asyncFuncArray.push(collectCurrentMaxTime(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                            break;
+                        case 'AverageTime':
+                            asyncFuncArray.push(collectAverageTime(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                            break;
+                        case 'QueueDetails':
+                            asyncFuncArray.push(collectQueueDetails(company, tenant, req.params.businessUnit, 'QUEUE', pubMeta.EventName));
+                            break;
+                        case 'QueueDetail':
+                            asyncFuncArray.push(collectSingleQueueDetails(company, tenant, req.params.businessUnit, 'QUEUE', pubMeta.EventName, req.params.param1));
+                            break;
+                        case 'TotalKeyCount':
+                            asyncFuncArray.push(collectTotalKeyCount(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                            break;
+                        case 'TotalTimeWithCurrentSession':
+                            asyncFuncArray.push(collectTotalTimeWithCurrentSession(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                            break;
+
+                        default :
+                            break;
+                    }
+                });
+            }
+
+
+
 
             if(asyncFuncArray && asyncFuncArray.length >0) {
                 Q.all(asyncFuncArray).then(function (results) {
