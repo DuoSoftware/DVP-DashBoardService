@@ -422,16 +422,6 @@ var publishDashboardData = function (req, res) {
             if (dbPubMeta) {
                 var asyncFuncArray = [];
 
-                let result = dbPubMeta.filter(obj => {
-                    return obj.WindowName === 'QUEUE' && obj.EventName ==='ResetAll';
-                })
-
-                if(result)
-                {
-                    asyncFuncArray.push(setResetAll(company, tenant, req.params.businessUnit, req.params.window, result[0].EventName, req.params.param1, req.params.param2));
-                }
-                else
-                {
                     dbPubMeta.forEach(function (pubMeta) {
 
 
@@ -471,9 +461,6 @@ var publishDashboardData = function (req, res) {
                                 break;
                         }
                     });
-                }
-
-
 
 
                 if(asyncFuncArray && asyncFuncArray.length >0) {
