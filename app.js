@@ -64,6 +64,9 @@ server.get('/DashboardGraph/ClosedVsOpenTicketByUser/:businessUnit/:duration', a
 //---------------------------DashboardPublish--------------------------------------
 
 server.post('/DashboardEvent/Publish/:businessUnit/:window/:param1/:param2', authorization({resource:"dashboardevent", action:"read"}), dashboardPubService.PublishDashboardData);
+server.post('/DashboardEvent/ResetAll/:businessUnit', authorization({resource:"dashboardevent", action:"read"}), dashboardPubService.publishResetAll);
+
+
 
 
 server.listen(port, function () {

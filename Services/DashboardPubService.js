@@ -375,95 +375,138 @@ var collectTotalTimeWithCurrentSession = function(company, tenant, businessUnit,
 };
 
 
+
+var publishResetAll = function (req,res) {
+    var company = parseInt(req.user.company);
+    var tenant = parseInt(req.user.tenant);
+
+        var reply = {
+            roomData: { roomName: "DASHBOARD:RESETALL", eventName: "RESETALL" },
+            DashboardData: {businessUnit: (req.params.businessUnit === "*")? "all": req.params.businessUnit, window: "DASHBOARD", param1: "RESETALL", param2: "RESETALL"}
+        };
+
+
+        var postData = {message: reply.DashboardData, From: 'DashboardService'};
+        RequestToNotify(company, tenant, reply.roomData.roomName, reply.roomData.eventName, postData);
+
+
+        res.end(messageFormatter.FormatMessage(undefined, "publishDashboardData: ResetAll", true, undefined));
+        //asyncFuncArray.push(setResetAll(company, tenant, req.params.businessUnit, req.params.window, "ResetAll", req.params.param1, req.params.param2));
+
+
+};
+
+
 var publishDashboardData = function (req, res) {
     var company = parseInt(req.user.company);
     var tenant = parseInt(req.user.tenant);
 
-    dbConn.DashboardPublishMetaData.findAll({
-        where: [{ WindowName: req.params.window }]
-    }).then(function (dbPubMeta) {
-        if (dbPubMeta) {
-            var asyncFuncArray = [];
+    if(req.params && req.params.window=="DASHBOARD" && req.params.param1=="RESETALL")
+    {
+        var reply = {
+            roomData: { roomName: req.params.window+':'+req.params.param1, eventName: req.params.param1 },
+            DashboardData: {businessUnit: (req.params.businessUnit === "*")? "all": req.params.businessUnit, window: req.params.window, param1: req.params.param1, param2: req.params.param2}
+        };
 
-            let result = dbPubMeta.filter(obj => {
-                return obj.WindowName === 'QUEUE' && obj.EventName ==='ResetAll';
-            })
 
-            if(result)
-            {
-                asyncFuncArray.push(setResetAll(company, tenant, req.params.businessUnit, req.params.window, result[0].EventName, req.params.param1, req.params.param2));
+        var postData = {message: reply.DashboardData, From: 'DashboardService'};
+        RequestToNotify(company, tenant, reply.roomData.roomName, reply.roomData.eventName, postData);
+
+        //asyncFuncArray.push(setResetAll(company, tenant, req.params.businessUnit, req.params.window, "ResetAll", req.params.param1, req.params.param2));
+    }
+    else
+    {
+        dbConn.DashboardPublishMetaData.findAll({
+            where: [{ WindowName: req.params.window }]
+        }).then(function (dbPubMeta) {
+            if (dbPubMeta) {
+                var asyncFuncArray = [];
+
+                let result = dbPubMeta.filter(obj => {
+                    return obj.WindowName === 'QUEUE' && obj.EventName ==='ResetAll';
+                })
+
+                if(result)
+                {
+                    asyncFuncArray.push(setResetAll(company, tenant, req.params.businessUnit, req.params.window, result[0].EventName, req.params.param1, req.params.param2));
+                }
+                else
+                {
+                    dbPubMeta.forEach(function (pubMeta) {
+
+
+                        switch (pubMeta.EventName){
+                            case 'TotalCount':
+                                asyncFuncArray.push(collectTotalCount(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                                break;
+                            case 'CurrentCount':
+                                asyncFuncArray.push(collectCurrentCount(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                                break;
+                            case 'TotalTime':
+                                asyncFuncArray.push(collectTotalTime(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                                break;
+                            case 'MaxWaiting':
+                                asyncFuncArray.push(collectMaxTime(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                                break;
+                            case 'CurrentMaxTime':
+                                asyncFuncArray.push(collectCurrentMaxTime(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                                break;
+                            case 'AverageTime':
+                                asyncFuncArray.push(collectAverageTime(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                                break;
+                            case 'QueueDetails':
+                                asyncFuncArray.push(collectQueueDetails(company, tenant, req.params.businessUnit, 'QUEUE', pubMeta.EventName));
+                                break;
+                            case 'QueueDetail':
+                                asyncFuncArray.push(collectSingleQueueDetails(company, tenant, req.params.businessUnit, 'QUEUE', pubMeta.EventName, req.params.param1));
+                                break;
+                            case 'TotalKeyCount':
+                                asyncFuncArray.push(collectTotalKeyCount(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                                break;
+                            case 'TotalTimeWithCurrentSession':
+                                asyncFuncArray.push(collectTotalTimeWithCurrentSession(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
+                                break;
+
+                            default :
+                                break;
+                        }
+                    });
+                }
+
+
+
+
+                if(asyncFuncArray && asyncFuncArray.length >0) {
+                    Q.all(asyncFuncArray).then(function (results) {
+
+                        if(results){
+                            results.forEach(function (result) {
+                                var postData = {message: result.DashboardData, From: 'DashboardService'};
+                                RequestToNotify(company, tenant, result.roomData.roomName, result.roomData.eventName, postData);
+                            });
+                        }
+
+                        logger.info('Execute Dashboard Publish: Success');
+                    }).catch(function (err) {
+                        logger.error('Execute Dashboard Publish: Error:: ' + err);
+                    });
+                }
+
+            }else{
+                logger.warn('No Publish metadata found');
             }
-            else
-            {
-                dbPubMeta.forEach(function (pubMeta) {
-
-
-                    switch (pubMeta.EventName){
-                        case 'TotalCount':
-                            asyncFuncArray.push(collectTotalCount(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
-                            break;
-                        case 'CurrentCount':
-                            asyncFuncArray.push(collectCurrentCount(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
-                            break;
-                        case 'TotalTime':
-                            asyncFuncArray.push(collectTotalTime(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
-                            break;
-                        case 'MaxWaiting':
-                            asyncFuncArray.push(collectMaxTime(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
-                            break;
-                        case 'CurrentMaxTime':
-                            asyncFuncArray.push(collectCurrentMaxTime(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
-                            break;
-                        case 'AverageTime':
-                            asyncFuncArray.push(collectAverageTime(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
-                            break;
-                        case 'QueueDetails':
-                            asyncFuncArray.push(collectQueueDetails(company, tenant, req.params.businessUnit, 'QUEUE', pubMeta.EventName));
-                            break;
-                        case 'QueueDetail':
-                            asyncFuncArray.push(collectSingleQueueDetails(company, tenant, req.params.businessUnit, 'QUEUE', pubMeta.EventName, req.params.param1));
-                            break;
-                        case 'TotalKeyCount':
-                            asyncFuncArray.push(collectTotalKeyCount(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
-                            break;
-                        case 'TotalTimeWithCurrentSession':
-                            asyncFuncArray.push(collectTotalTimeWithCurrentSession(company, tenant, req.params.businessUnit, req.params.window, pubMeta.EventName, req.params.param1, req.params.param2));
-                            break;
-
-                        default :
-                            break;
-                    }
-                });
-            }
+        }).error(function (err) {
+            logger.error(err);
+        });
+    }
 
 
 
 
-            if(asyncFuncArray && asyncFuncArray.length >0) {
-                Q.all(asyncFuncArray).then(function (results) {
-
-                    if(results){
-                        results.forEach(function (result) {
-                            var postData = {message: result.DashboardData, From: 'DashboardService'};
-                            RequestToNotify(company, tenant, result.roomData.roomName, result.roomData.eventName, postData);
-                        });
-                    }
-
-                    logger.info('Execute Dashboard Publish: Success');
-                }).catch(function (err) {
-                    logger.error('Execute Dashboard Publish: Error:: ' + err);
-                });
-            }
-            
-        }else{
-            logger.warn('No Publish metadata found');
-        }
-    }).error(function (err) {
-        logger.error(err);
-    });
 
     res.end(messageFormatter.FormatMessage(undefined, "publishDashboardData: Accepted", true, undefined));
 };
 
 
 module.exports.PublishDashboardData = publishDashboardData;
+module.exports.publishResetAll = publishResetAll;
