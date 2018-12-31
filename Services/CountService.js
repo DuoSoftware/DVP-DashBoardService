@@ -545,7 +545,7 @@ var onGetTotalTimeWithCurrentSessions = function(tenant, company, businessUnit, 
 
     onGetCurrentTotalTime(tenant, company, businessUnit, window, param1, param2).then(function(result){
         totalTime = totalTime + result.value;
-        return onGetTotalTime(tenant, company, window, param1, param2);
+        return onGetTotalTime(tenant, company, businessUnit, window, param1, param2);
     }).then(function(result){
         totalTime = totalTime + result.value;
 
