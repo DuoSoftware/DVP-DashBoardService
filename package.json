@@ -21,6 +21,7 @@
     "bluebird": "^3.4.7",
     "config": "^1.24.0",
     "dvp-common": "1.1.0",
+    "dvp-common-lite": "^1.1.0",
     "dvp-dbmodels": "2.1.0",
     "ioredis": "^3.1.1",
     "moment": "^2.17.1",
