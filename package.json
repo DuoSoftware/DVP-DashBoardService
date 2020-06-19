@@ -23,6 +23,7 @@
     "dvp-common": "1.1.0",
     "dvp-common-lite": "^1.1.0",
     "dvp-dbmodels": "2.1.0",
+    "dvp-healthcheck": "^1.0.6",
     "ioredis": "^3.1.1",
     "moment": "^2.17.1",
     "q": "^1.4.1",

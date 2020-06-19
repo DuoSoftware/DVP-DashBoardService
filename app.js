@@ -13,6 +13,8 @@ var countService = require("./Services/CountService.js");
 var graphService = require("./Services/GraphService.js");
 var port = config.Host.port || 8874;
 var dashboardPubService = require("./Services/DashboardPubService");
+var healthcheck = require("dvp-healthcheck/DBHealthChecker");
+var redisHandler = require("./RedisHandler.js");
 
 var server = restify.createServer({
   name: "DVP Dashboard Service",
@@ -28,6 +30,11 @@ server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser());
 
 server.use(jwt({ secret: secret.Secret }));
+
+var hc = new healthcheck(server, {
+  redis: redisHandler.redisClient,
+});
+hc.Initiate();
 
 //---------------------------DashboardEvent--------------------------------------
 
