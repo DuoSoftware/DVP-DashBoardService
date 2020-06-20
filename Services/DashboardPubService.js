@@ -29,6 +29,9 @@ function DoPost(companyInfo, eventName, serviceurl, postData, callback) {
     },
     body: jsonStr,
   };
+
+  logger.debug(`Send notifications ---->  ${JSON.stringify(options)}`);
+
   try {
     request.post(options, function optionalCallback(err, httpResponse, body) {
       if (err) {
@@ -825,6 +828,7 @@ var publishDashboardData = function (req, res) {
         if (dbPubMeta) {
           var asyncFuncArray = [];
 
+          logger.debug(`Published Data ---> ${JSON.stringify(dbPubMeta)}`);
           dbPubMeta.forEach(function (pubMeta) {
             switch (pubMeta.EventName) {
               case "TotalCount":
