@@ -95,6 +95,6 @@ module.exports = {
     notificationServiceHost: "",
     notificationServicePort: "8089",
     notificationServiceVersion: "1.0.0.0",
-    dynamicPort: true,
+    dynamicPort: false,
   },
 };
