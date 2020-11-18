@@ -121,6 +121,7 @@ module.exports = {
         "user": "SYS_RABBITMQ_USER",
         "password": "SYS_RABBITMQ_PASSWORD",
         "type": "SYS_RABBITMQ_TYPE",
+        "vhost": "SYS_RABBITMQ_VHOSt"
     },
 
     "Services" : {
@@ -132,7 +133,7 @@ module.exports = {
         "resourceServiceHost": "SYS_RESOURCESERVICE_HOST",
         "resourceServicePort": "SYS_RESOURCESERVICE_PORT",
         "resourceServiceVersion": "SYS_RESOURCESERVICE_VERSION",
-        
+
         "uploadurl": "SYS_FILESERVICE_HOST",
         "uploadport":"SYS_FILESERVICE_PORT",
         "uploadurlVersion":"SYS_FILESERVICE_VERSION",
