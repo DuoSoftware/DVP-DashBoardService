@@ -10,11 +10,11 @@ var moment = require('moment');
 var Q = require('q');
 var config = require('config');
 
-var UniqueArray = function(array) {
+var UniqueArray = function (array) {
     var processed = [];
-    for (var i=array.length-1; i>=0; i--) {
-        if (array[i]!= null) {
-            if (processed.indexOf(array[i])<0) {
+    for (var i = array.length - 1; i >= 0; i--) {
+        if (array[i] != null) {
+            if (processed.indexOf(array[i]) < 0) {
                 processed.push(array[i]);
             } else {
                 array.splice(i, 1);
@@ -25,30 +25,30 @@ var UniqueArray = function(array) {
 };
 
 
-var getQueueName = function(queueId){
+var getQueueName = function (queueId) {
     var deferred = Q.defer();
 
     var queue = queueId.replace(/-/g, ":");
     var queueParams = queue.split(':');
     var queuePriority = queueParams.pop();
     var queueSettingId = queueParams.join(':');
-    console.log('QueueId:: '+ queue);
-    console.log('QueueSettingId:: '+ queueSettingId);
-    redisHandler.GetHashField('QueueNameHash', queueSettingId, function(err, result){
-        if(err){
+    console.log('QueueId:: ' + queue);
+    console.log('QueueSettingId:: ' + queueSettingId);
+    redisHandler.GetHashField('QueueNameHash', queueSettingId, function (err, result) {
+        if (err) {
             deferred.resolve(queueId);
-        }else{
-            if(result) {
+        } else {
+            if (result) {
                 var queueSetting = JSON.parse(result);
 
-                if(queueSetting && queueSetting.QueueName) {
+                if (queueSetting && queueSetting.QueueName) {
                     var queueName = queueSetting.QueueName;
-                    queueName = (queuePriority !== '0')? util.format('%s-P%s', queueName, queuePriority): queueName;
+                    queueName = (queuePriority !== '0') ? util.format('%s-P%s', queueName, queuePriority) : queueName;
                     deferred.resolve(queueName);
-                }else{
+                } else {
                     deferred.resolve(queueId);
                 }
-            }else{
+            } else {
                 deferred.resolve(queueId);
             }
         }
@@ -57,45 +57,45 @@ var getQueueName = function(queueId){
     return deferred.promise;
 };
 
-var getQueueDetail = function(tenant, company, businessUnit, queueId){
+var getQueueDetail = function (tenant, company, businessUnit, queueId) {
     var deferred = Q.defer();
 
-    var queueDetail = {QueueId: queueId, QueueInfo: {}};
+    var queueDetail = { QueueId: queueId, QueueInfo: {} };
 
-    getQueueName(queueId).then(function(queueName){
+    getQueueName(queueId).then(function (queueName) {
         queueDetail.QueueName = queueName;
         return onGetTotalCount(tenant, company, businessUnit, 'QUEUE', queueId, '*');
-    }).then(function(result){
+    }).then(function (result) {
         queueDetail.QueueInfo.TotalQueued = result.value;
         return onGetTotalCount(tenant, company, businessUnit, 'QUEUEANSWERED', queueId, '*');
-    }).then(function(result){
+    }).then(function (result) {
         queueDetail.QueueInfo.TotalAnswered = result.value;
         return onGetTotalCount(tenant, company, businessUnit, 'QUEUEDROPPED', queueId, '*');
-    }).then(function(result){
+    }).then(function (result) {
         queueDetail.QueueInfo.QueueDropped = result.value;
         return onGetMaxTime(tenant, company, businessUnit, 'QUEUE', queueId, '*');
-    }).then(function(result){
+    }).then(function (result) {
         queueDetail.QueueInfo.MaxWaitTime = result.value;
         return onGetCurrentMaxTime(tenant, company, businessUnit, 'QUEUE', queueId, '*');
-    }).then(function(result){
+    }).then(function (result) {
         queueDetail.QueueInfo.EventTime = moment().format();
         queueDetail.QueueInfo.CurrentMaxWaitTime = result.value;
         return onGetCurrentCount(tenant, company, businessUnit, 'QUEUE', queueId, '*');
-    }).then(function(result){
+    }).then(function (result) {
         queueDetail.QueueInfo.CurrentWaiting = result.value;
         return onGetAverageTime(tenant, company, businessUnit, 'QUEUE', queueId, '*');
-    }).then(function(result){
+    }).then(function (result) {
         queueDetail.QueueInfo.AverageWaitTime = result.value;
         deferred.resolve(queueDetail);
-    }).catch(function(err){
-        console.log('getQueueDetail: Error:: '+err);
+    }).catch(function (err) {
+        console.log('getQueueDetail: Error:: ' + err);
         deferred.resolve(queueDetail);
     });
 
     return deferred.promise;
 };
 
-var onGetMaxTime = function(tenant, company, businessUnit, window, param1, param2){
+var onGetMaxTime = function (tenant, company, businessUnit, window, param1, param2) {
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetMaxTime Internal method ");
@@ -104,15 +104,15 @@ var onGetMaxTime = function(tenant, company, businessUnit, window, param1, param
 
     var maxTimeSearch = util.format('MAXTIME:%s:%s:%s:%s:%s:%s', tenant, company, businessUnit, window, param1, param2);
 
-    redisHandler.SearchObjects(maxTimeSearch, function(err, result){
-        if(err){
+    redisHandler.SearchObjects(maxTimeSearch, function (err, result) {
+        if (err) {
             reply.jsonString = messageFormatter.FormatMessage(err, "OnGetMaxTime: SearchKeys Failed", false, 0);
             reply.value = 0;
             deferred.resolve(reply);
-        }else{
-            if(result && result.length > 0){
+        } else {
+            if (result && result.length > 0) {
                 var tempMaxTime = 0;
-                for(var i = 0; i< result.length; i++){
+                for (var i = 0; i < result.length; i++) {
                     var value = parseInt(result[i]);
                     if (tempMaxTime < value) {
                         tempMaxTime = value
@@ -122,7 +122,7 @@ var onGetMaxTime = function(tenant, company, businessUnit, window, param1, param
                 reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetMaxTime: Success", true, tempMaxTime);
                 reply.value = tempMaxTime;
                 deferred.resolve(reply);
-            }else{
+            } else {
                 reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetMaxTime: No Keys Found", false, 0);
                 reply.value = 0;
                 deferred.resolve(reply);
@@ -133,7 +133,7 @@ var onGetMaxTime = function(tenant, company, businessUnit, window, param1, param
     return deferred.promise;
 };
 
-var onGetCurrentMaxTime = function(tenant, company, businessUnit, window, param1, param2){
+var onGetCurrentMaxTime = function (tenant, company, businessUnit, window, param1, param2) {
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetCurrentMaxTime Internal method ");
@@ -142,20 +142,20 @@ var onGetCurrentMaxTime = function(tenant, company, businessUnit, window, param1
 
     var currentSessionSearch = util.format('SESSION:%s:%s:%s:%s:*:%s:%s', tenant, company, businessUnit, window, param1, param2);
 
-    redisHandler.SearchHashes(currentSessionSearch, 'time', function(err, result){
-        if(err){
+    redisHandler.SearchHashes(currentSessionSearch, 'time', function (err, result) {
+        if (err) {
             reply.jsonString = messageFormatter.FormatMessage(err, "OnGetCurrentMaxTime: SearchKeys Failed", false, 0);
             reply.value = 0;
             deferred.resolve(reply);
-        }else{
-            if(result && result.length > 0){
+        } else {
+            if (result && result.length > 0) {
                 var tempMaxTime = 0;
                 var maxTimeStamp = undefined;
                 var timeNow = moment();
 
 
 
-                result.sort(function (time1, time2){
+                result.sort(function (time1, time2) {
                     return moment(time1).diff(moment(time2))
                 });
                 //for(var i = 0; i< result.length; i++){
@@ -170,7 +170,7 @@ var onGetCurrentMaxTime = function(tenant, company, businessUnit, window, param1
                 reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetCurrentMaxTime: Success", true, result[0]);
                 reply.value = result[0];
                 deferred.resolve(reply);
-            }else{
+            } else {
                 reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetCurrentMaxTime: No Keys Found", false, undefined);
                 reply.value = 0;
                 deferred.resolve(reply);
@@ -181,7 +181,7 @@ var onGetCurrentMaxTime = function(tenant, company, businessUnit, window, param1
     return deferred.promise;
 };
 
-var onGetCurrentCount = function(tenant, company, businessUnit, window, param1, param2){
+var onGetCurrentCount = function (tenant, company, businessUnit, window, param1, param2) {
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetCurrentCount Internal method ");
@@ -189,7 +189,7 @@ var onGetCurrentCount = function(tenant, company, businessUnit, window, param1, 
     var reply = {};
     var currentCountSearch;
 
-    if(businessUnit && businessUnit !== '*'){
+    if (businessUnit && businessUnit !== '*') {
         if (param1 && param2) {
             if (param1 !== '*' && param2 !== '*') {
                 currentCountSearch = util.format('CONCURRENT:%s:%s:%s:%s:%s:%s', tenant, company, businessUnit, window, param1, param2);
@@ -215,7 +215,7 @@ var onGetCurrentCount = function(tenant, company, businessUnit, window, param1, 
         } else {
             currentCountSearch = util.format('CONCURRENTWOPARAMS:%s:%s:%s:%s', tenant, company, businessUnit, window);
         }
-    }else {
+    } else {
         if (param1 && param2) {
             if (param1 !== '*' && param2 !== '*') {
                 currentCountSearch = util.format('CONCURRENT:%s:%s:%s:%s:%s', tenant, company, window, param1, param2);
@@ -243,13 +243,13 @@ var onGetCurrentCount = function(tenant, company, businessUnit, window, param1, 
         }
     }
 
-    redisHandler.GetObject(currentCountSearch, function(err, result){
-        if(err){
+    redisHandler.GetObject(currentCountSearch, function (err, result) {
+        if (err) {
             reply.jsonString = messageFormatter.FormatMessage(err, "OnGetCurrentCount: Get Failed", false, 0);
             reply.value = 0;
             deferred.resolve(reply);
-        }else{
-            if(result){
+        } else {
+            if (result) {
                 var tempTotal = parseInt(result);
 
                 if (tempTotal < 0) {
@@ -259,7 +259,7 @@ var onGetCurrentCount = function(tenant, company, businessUnit, window, param1, 
                 reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetCurrentCount: Success", true, tempTotal);
                 reply.value = tempTotal;
                 deferred.resolve(reply);
-            }else{
+            } else {
                 reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetCurrentCount: No Keys Found", false, 0);
                 reply.value = 0;
                 deferred.resolve(reply);
@@ -298,7 +298,7 @@ var onGetCurrentCount = function(tenant, company, businessUnit, window, param1, 
     return deferred.promise;
 };
 
-var onGetTotalCount = function(tenant, company, businessUnit, window, param1, param2){
+var onGetTotalCount = function (tenant, company, businessUnit, window, param1, param2) {
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetTotalCount Internal method ");
@@ -306,7 +306,7 @@ var onGetTotalCount = function(tenant, company, businessUnit, window, param1, pa
     var reply = {};
     var totalCountSearch;
 
-    if(businessUnit && businessUnit !== '*'){
+    if (businessUnit && businessUnit !== '*') {
         if (param1 && param2) {
             if (param1 !== '*' && param2 !== '*') {
                 totalCountSearch = util.format('TOTALCOUNT:%s:%s:%s:%s:%s:%s', tenant, company, businessUnit, window, param1, param2);
@@ -332,7 +332,7 @@ var onGetTotalCount = function(tenant, company, businessUnit, window, param1, pa
         } else {
             totalCountSearch = util.format('TOTALCOUNTWOPARAMS:%s:%s:%s:%s', tenant, company, businessUnit, window);
         }
-    }else {
+    } else {
         if (param1 && param2) {
             if (param1 !== '*' && param2 !== '*') {
                 totalCountSearch = util.format('TOTALCOUNT:%s:%s:%s:%s:%s', tenant, company, window, param1, param2);
@@ -360,13 +360,13 @@ var onGetTotalCount = function(tenant, company, businessUnit, window, param1, pa
         }
     }
 
-    redisHandler.GetObject(totalCountSearch, function(err, result){
-        if(err){
+    redisHandler.GetObject(totalCountSearch, function (err, result) {
+        if (err) {
             reply.jsonString = messageFormatter.FormatMessage(err, "OnGetTotalCount: Get Failed", false, 0);
             reply.value = 0;
             deferred.resolve(reply);
-        }else{
-            if(result){
+        } else {
+            if (result) {
                 var tempTotal = parseInt(result);
 
                 if (tempTotal < 0) {
@@ -376,7 +376,7 @@ var onGetTotalCount = function(tenant, company, businessUnit, window, param1, pa
                 reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetTotalCount: Success", true, tempTotal);
                 reply.value = tempTotal;
                 deferred.resolve(reply);
-            }else{
+            } else {
                 reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetTotalCount: No Keys Found", false, 0);
                 reply.value = 0;
                 deferred.resolve(reply);
@@ -415,7 +415,7 @@ var onGetTotalCount = function(tenant, company, businessUnit, window, param1, pa
     return deferred.promise;
 };
 
-var onGetTotalTime = function(tenant, company, businessUnit, window, param1, param2){
+var onGetTotalTime = function (tenant, company, businessUnit, window, param1, param2) {
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetTotalTime Internal method ");
@@ -423,7 +423,7 @@ var onGetTotalTime = function(tenant, company, businessUnit, window, param1, par
     var reply = {};
     var totalTimeSearch;
 
-    if(businessUnit && businessUnit !== '*'){
+    if (businessUnit && businessUnit !== '*') {
         if (param1 && param2) {
             if (param1 !== '*' && param2 !== '*') {
                 totalTimeSearch = util.format('TOTALTIME:%s:%s:%s:%s:%s:%s', tenant, company, businessUnit, window, param1, param2);
@@ -449,7 +449,7 @@ var onGetTotalTime = function(tenant, company, businessUnit, window, param1, par
         } else {
             totalTimeSearch = util.format('TOTALTIMEWOPARAMS:%s:%s:%s:%s', tenant, company, businessUnit, window);
         }
-    }else {
+    } else {
 
         if (param1 && param2) {
             if (param1 !== '*' && param2 !== '*') {
@@ -478,13 +478,13 @@ var onGetTotalTime = function(tenant, company, businessUnit, window, param1, par
         }
     }
 
-    redisHandler.GetObject(totalTimeSearch, function(err, result){
-        if(err){
+    redisHandler.GetObject(totalTimeSearch, function (err, result) {
+        if (err) {
             reply.jsonString = messageFormatter.FormatMessage(err, "OnGetTotalTime: Get Failed", false, 0);
             reply.value = 0;
             deferred.resolve(reply);
-        }else{
-            if(result){
+        } else {
+            if (result) {
                 var tempTotal = parseInt(result);
 
                 if (tempTotal < 0) {
@@ -494,7 +494,7 @@ var onGetTotalTime = function(tenant, company, businessUnit, window, param1, par
                 reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetTotalTime: Success", true, tempTotal);
                 reply.value = tempTotal;
                 deferred.resolve(reply);
-            }else{
+            } else {
                 reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetTotalTime: No Keys Found", false, 0);
                 reply.value = 0;
                 deferred.resolve(reply);
@@ -534,7 +534,7 @@ var onGetTotalTime = function(tenant, company, businessUnit, window, param1, par
     return deferred.promise;
 };
 
-var onGetTotalTimeWithCurrentSessions = function(tenant, company, businessUnit, window, param1, param2){
+var onGetTotalTimeWithCurrentSessions = function (tenant, company, businessUnit, window, param1, param2) {
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.onGetTotalTimeWithCurrentSessions Internal method ");
@@ -543,17 +543,17 @@ var onGetTotalTimeWithCurrentSessions = function(tenant, company, businessUnit, 
 
     var totalTime = 0;
 
-    onGetCurrentTotalTime(tenant, company, businessUnit, window, param1, param2).then(function(result){
+    onGetCurrentTotalTime(tenant, company, businessUnit, window, param1, param2).then(function (result) {
         totalTime = totalTime + result.value;
         return onGetTotalTime(tenant, company, businessUnit, window, param1, param2);
-    }).then(function(result){
+    }).then(function (result) {
         totalTime = totalTime + result.value;
 
         reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetTotalTimeWithCurrentSessions: Success", true, totalTime);
         reply.value = totalTime;
         deferred.resolve(reply);
 
-    }).catch(function(err){
+    }).catch(function (err) {
         reply.jsonString = messageFormatter.FormatMessage(err, "OnGetTotalTimeWithCurrentSessions: Failed", false, 0);
         reply.value = 0;
         deferred.resolve(reply);
@@ -565,7 +565,7 @@ var onGetTotalTimeWithCurrentSessions = function(tenant, company, businessUnit, 
     return deferred.promise;
 };
 
-var onGetCurrentTotalTime = function(tenant, company, businessUnit, window, param1, param2){
+var onGetCurrentTotalTime = function (tenant, company, businessUnit, window, param1, param2) {
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetCurrentMaxTime Internal method ");
@@ -574,19 +574,19 @@ var onGetCurrentTotalTime = function(tenant, company, businessUnit, window, para
 
     var currentSessionSearch = util.format('SESSION:%s:%s:%s:%s:*:%s:%s', tenant, company, businessUnit, window, param1, param2);
 
-    redisHandler.SearchHashes(currentSessionSearch, 'time', function(err, result){
-        if(err){
+    redisHandler.SearchHashes(currentSessionSearch, 'time', function (err, result) {
+        if (err) {
             reply.jsonString = messageFormatter.FormatMessage(err, "OnGetCurrentMaxTime: SearchKeys Failed", false, 0);
             reply.value = 0;
             deferred.resolve(reply);
-        }else{
-            if(result && result.length > 0){
+        } else {
+            if (result && result.length > 0) {
                 var tempTotalTime = 0;
                 var timeNow = moment();
-                for(var i = 0; i< result.length; i++){
+                for (var i = 0; i < result.length; i++) {
                     var sessionTime = moment(result[i]);
                     var timeDiff = timeNow.diff(sessionTime, 'seconds');
-                    if(timeDiff > 0) {
+                    if (timeDiff > 0) {
                         tempTotalTime = tempTotalTime + timeDiff;
                     }
                 }
@@ -594,7 +594,7 @@ var onGetCurrentTotalTime = function(tenant, company, businessUnit, window, para
                 reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetCurrentMaxTime: Success", true, tempTotalTime);
                 reply.value = tempTotalTime;
                 deferred.resolve(reply);
-            }else{
+            } else {
                 reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetCurrentMaxTime: No Keys Found", false, 0);
                 reply.value = 0;
                 deferred.resolve(reply);
@@ -605,7 +605,7 @@ var onGetCurrentTotalTime = function(tenant, company, businessUnit, window, para
     return deferred.promise;
 };
 
-var onGetTotalKeyCount = function(tenant, company, businessUnit, window, param1, param2){
+var onGetTotalKeyCount = function (tenant, company, businessUnit, window, param1, param2) {
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetTotalKeyCount Internal method ");
@@ -614,19 +614,19 @@ var onGetTotalKeyCount = function(tenant, company, businessUnit, window, param1,
 
     var totalKeyCountSearch = util.format('TOTALCOUNT:%s:%s:%s:%s:%s:%s', tenant, company, businessUnit, window, param1, param2);
 
-    redisHandler.SearchKeys(totalKeyCountSearch, function(err, result){
-        if(err){
+    redisHandler.SearchKeys(totalKeyCountSearch, function (err, result) {
+        if (err) {
             reply.jsonString = messageFormatter.FormatMessage(err, "OnGetTotalKeyCount: SearchKeys Failed", false, 0);
             reply.value = 0;
             deferred.resolve(reply);
-        }else{
-            if(result && result.length > 0){
+        } else {
+            if (result && result.length > 0) {
 
                 reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetCurrentMaxTime: Success", true, result.length);
                 reply.value = result.length;
                 deferred.resolve(reply);
 
-            }else{
+            } else {
 
                 reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetCurrentMaxTime: No Keys Found", false, 0);
                 reply.value = 0;
@@ -639,7 +639,7 @@ var onGetTotalKeyCount = function(tenant, company, businessUnit, window, param1,
     return deferred.promise;
 };
 
-var onGetAverageTime = function(tenant, company, businessUnit, window, param1, param2){
+var onGetAverageTime = function (tenant, company, businessUnit, window, param1, param2) {
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetAverageTime Internal method ");
@@ -651,10 +651,10 @@ var onGetAverageTime = function(tenant, company, businessUnit, window, param1, p
     var average = 0;
 
 
-    onGetTotalTime(tenant, company, businessUnit, window, param1, param2).then(function(result){
+    onGetTotalTime(tenant, company, businessUnit, window, param1, param2).then(function (result) {
         totalTime = totalTime + result.value;
         return onGetTotalCount(tenant, company, businessUnit, window, param1, param2);
-    }).then(function(result){
+    }).then(function (result) {
         totalCount = result.value;
 
         if (totalCount === 0) {
@@ -667,7 +667,7 @@ var onGetAverageTime = function(tenant, company, businessUnit, window, param1, p
         reply.value = average;
         deferred.resolve(reply);
 
-    }).catch(function(err){
+    }).catch(function (err) {
         reply.jsonString = messageFormatter.FormatMessage(err, "OnGetAverageTime: Failed", false, 0);
         reply.value = 0;
         deferred.resolve(reply);
@@ -678,7 +678,7 @@ var onGetAverageTime = function(tenant, company, businessUnit, window, param1, p
     return deferred.promise;
 };
 
-var onGetAverageCountPerKey = function(tenant, company, businessUnit, countWindow, countParam1, countParam2, keyWindow, keyParam1, keyParam2){
+var onGetAverageCountPerKey = function (tenant, company, businessUnit, countWindow, countParam1, countParam2, keyWindow, keyParam1, keyParam2) {
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetAverageCountPerKey Internal method ");
@@ -690,10 +690,10 @@ var onGetAverageCountPerKey = function(tenant, company, businessUnit, countWindo
     var average = 0;
 
 
-    onGetTotalCount(tenant, company, businessUnit, countWindow, countParam1, countParam2).then(function(result){
+    onGetTotalCount(tenant, company, businessUnit, countWindow, countParam1, countParam2).then(function (result) {
         totalCount = totalCount + result.value;
         return onGetTotalKeyCount(tenant, company, businessUnit, keyWindow, keyParam1, keyParam2);
-    }).then(function(result){
+    }).then(function (result) {
         totalKeys = result.value;
 
         if (totalKeys === 0) {
@@ -706,7 +706,7 @@ var onGetAverageCountPerKey = function(tenant, company, businessUnit, countWindo
         reply.value = average;
         deferred.resolve(reply);
 
-    }).catch(function(err){
+    }).catch(function (err) {
         reply.jsonString = messageFormatter.FormatMessage(err, "OnGetAverageCountPerKey: Failed", false, 0);
         reply.value = 0;
         deferred.resolve(reply);
@@ -717,7 +717,7 @@ var onGetAverageCountPerKey = function(tenant, company, businessUnit, countWindo
     return deferred.promise;
 };
 
-var onGetAverageTimeWithCurrentSessions = function(tenant, company, businessUnit, window, param1, param2){
+var onGetAverageTimeWithCurrentSessions = function (tenant, company, businessUnit, window, param1, param2) {
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetAverageTime Internal method ");
@@ -728,13 +728,13 @@ var onGetAverageTimeWithCurrentSessions = function(tenant, company, businessUnit
     var totalCount = 0;
     var average = 0;
 
-    onGetCurrentTotalTime(tenant, company, businessUnit, window, param1, param2).then(function(result){
+    onGetCurrentTotalTime(tenant, company, businessUnit, window, param1, param2).then(function (result) {
         totalTime = totalTime + result.value;
         return onGetTotalTime(tenant, company, businessUnit, window, param1, param2);
-    }).then(function(result){
+    }).then(function (result) {
         totalTime = totalTime + result.value;
         return onGetTotalCount(tenant, company, businessUnit, window, param1, param2);
-    }).then(function(result){
+    }).then(function (result) {
         totalCount = result.value;
 
         if (totalCount === 0) {
@@ -747,7 +747,7 @@ var onGetAverageTimeWithCurrentSessions = function(tenant, company, businessUnit
         reply.value = average;
         deferred.resolve(reply);
 
-    }).catch(function(err){
+    }).catch(function (err) {
         reply.jsonString = messageFormatter.FormatMessage(err, "OnGetAverageTime: Failed", false, 0);
         reply.value = 0;
         deferred.resolve(reply);
@@ -759,7 +759,7 @@ var onGetAverageTimeWithCurrentSessions = function(tenant, company, businessUnit
     return deferred.promise;
 };
 
-var onGetAverageTimePerKeyWithCurrentSessions = function(tenant, company, businessUnit, window, param1, param2){
+var onGetAverageTimePerKeyWithCurrentSessions = function (tenant, company, businessUnit, window, param1, param2) {
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetAverageTime Internal method ");
@@ -770,13 +770,13 @@ var onGetAverageTimePerKeyWithCurrentSessions = function(tenant, company, busine
     var totalCount = 0;
     var average = 0;
 
-    onGetCurrentTotalTime(tenant, company, businessUnit, window, param1, param2).then(function(result){
+    onGetCurrentTotalTime(tenant, company, businessUnit, window, param1, param2).then(function (result) {
         totalTime = totalTime + result.value;
         return onGetTotalTime(tenant, company, businessUnit, window, param1, param2);
-    }).then(function(result){
+    }).then(function (result) {
         totalTime = totalTime + result.value;
         return onGetTotalKeyCount(tenant, company, businessUnit, window, param1, param2);
-    }).then(function(result){
+    }).then(function (result) {
         totalCount = result.value;
 
         if (totalCount === 0) {
@@ -789,7 +789,7 @@ var onGetAverageTimePerKeyWithCurrentSessions = function(tenant, company, busine
         reply.value = average;
         deferred.resolve(reply);
 
-    }).catch(function(err){
+    }).catch(function (err) {
         reply.jsonString = messageFormatter.FormatMessage(err, "OnGetAverageTime: Failed", false, 0);
         reply.value = 0;
         deferred.resolve(reply);
@@ -801,7 +801,7 @@ var onGetAverageTimePerKeyWithCurrentSessions = function(tenant, company, busine
     return deferred.promise;
 };
 
-var onGetQueueDetails = function(tenant, company, businessUnit){
+var onGetQueueDetails = function (tenant, company, businessUnit) {
     var deferred = Q.defer();
 
     logger.info("DVP-DashboardService.OnGetQueueDetails Internal method ");
@@ -811,31 +811,30 @@ var onGetQueueDetails = function(tenant, company, businessUnit){
 
     var totalCountSearch = util.format('TOTALCOUNT:%s:%s:%s:%s:*:*', tenant, company, businessUnit, 'QUEUE');
 
-    redisHandler.SearchKeys(totalCountSearch, function(err, result){
-        if(err){
+    redisHandler.SearchKeys(totalCountSearch, function (err, result) {
+        if (err) {
             reply.jsonString = messageFormatter.FormatMessage(err, "OnGetQueueDetails: SearchKeys Failed", false, queueDetailList);
             reply.value = queueDetailList;
             deferred.resolve(reply);
-        }else{
-            if(result && result.length > 0){
+        } else {
+            if (result && result.length > 0) {
                 var queueIdList = [];
-                for(var i=0; i< result.length; i++){
+                for (var i = 0; i < result.length; i++) {
                     var keyItems = result[i].split(':');
-                    if(keyItems.length >= 6){
+                    if (keyItems.length >= 6) {
                         queueIdList.push(keyItems[5]);
                     }
                 }
 
                 queueIdList = UniqueArray(queueIdList);
-
-                if(queueIdList.length > 0){
+                if (queueIdList.length > 0) {
 
                     var count = queueIdList.length;
                     queueIdList.forEach(function (queueId) {
-                        getQueueDetail(tenant, company, businessUnit, queueId).then(function(queueInfo){
+                        getQueueDetail(tenant, company, businessUnit, queueId).then(function (queueInfo) {
                             queueDetailList.push(queueInfo);
 
-                            if(queueDetailList.length === count){
+                            if (queueDetailList.length === count) {
                                 reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetQueueDetails: Success", true, queueDetailList);
                                 reply.value = queueDetailList;
                                 deferred.resolve(reply);
@@ -855,12 +854,12 @@ var onGetQueueDetails = function(tenant, company, businessUnit){
                             }
                         });
                     }*/
-                }else{
+                } else {
                     reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetQueueDetails: No Queues Found", false, queueDetailList);
                     reply.value = queueDetailList;
                     deferred.resolve(reply);
                 }
-            }else{
+            } else {
                 reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetQueueDetails: No Keys Found", false, queueDetailList);
                 reply.value = queueDetailList;
                 deferred.resolve(reply);
@@ -871,11 +870,11 @@ var onGetQueueDetails = function(tenant, company, businessUnit){
     return deferred.promise;
 };
 
-var onGetSingleQueueDetails = function(tenant, company, businessUnit, queueId){
+var onGetSingleQueueDetails = function (tenant, company, businessUnit, queueId) {
     var deferred = Q.defer();
 
     var reply = {};
-    getQueueDetail(tenant, company, businessUnit, queueId).then(function(queueInfo){
+    getQueueDetail(tenant, company, businessUnit, queueId).then(function (queueInfo) {
         reply.jsonString = messageFormatter.FormatMessage(undefined, "OnGetSingleQueueDetails: Success", true, queueInfo);
         reply.value = queueInfo;
         deferred.resolve(reply);
@@ -886,166 +885,166 @@ var onGetSingleQueueDetails = function(tenant, company, businessUnit, queueId){
 
 
 
-var OnGetMaxTime = function(req,res){
+var OnGetMaxTime = function (req, res) {
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetMaxTime(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function(result){
+    onGetMaxTime(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function (result) {
         res.end(result.jsonString);
-    }).catch(function(err){
+    }).catch(function (err) {
         console.log(err);
         res.end(messageFormatter.FormatMessage(err, "OnGetMaxTime: Error", false, 0));
     });
 
 };
 
-var OnGetCurrentMaxTime = function(req,res){
+var OnGetCurrentMaxTime = function (req, res) {
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetCurrentMaxTime(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function(result){
+    onGetCurrentMaxTime(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function (result) {
         res.end(result.jsonString);
-    }).catch(function(err){
+    }).catch(function (err) {
         console.log(err);
         res.end(messageFormatter.FormatMessage(err, "OnGetCurrentMaxTime: Error", false, 0));
     });
 
 };
 
-var OnGetCurrentCount = function(req,res){
+var OnGetCurrentCount = function (req, res) {
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetCurrentCount(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function(result){
+    onGetCurrentCount(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function (result) {
         res.end(result.jsonString);
-    }).catch(function(err){
+    }).catch(function (err) {
         console.log(err);
         res.end(messageFormatter.FormatMessage(err, "OnGetCurrentCount: Error", false, 0));
     });
 
 };
 
-var OnGetAverageTime = function(req, res){
+var OnGetAverageTime = function (req, res) {
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetAverageTime(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function(result){
+    onGetAverageTime(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function (result) {
         res.end(result.jsonString);
-    }).catch(function(err){
+    }).catch(function (err) {
         console.log(err);
         res.end(messageFormatter.FormatMessage(err, "OnGetAverageTime: Error", false, 0));
     });
 };
 
-var OnGetQueueDetails = function(req, res){
+var OnGetQueueDetails = function (req, res) {
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetQueueDetails(tenant, company, req.params.businessUnit).then(function(result){
+    onGetQueueDetails(tenant, company, req.params.businessUnit).then(function (result) {
         res.end(result.jsonString);
-    }).catch(function(err){
+    }).catch(function (err) {
         console.log(err);
         res.end(messageFormatter.FormatMessage(err, "OnGetQueueDetails: Error", false, undefined));
     });
 };
 
-var OnGetSingleQueueDetails = function(req, res){
+var OnGetSingleQueueDetails = function (req, res) {
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetSingleQueueDetails(tenant, company, req.params.businessUnit, req.params.queueId).then(function(result){
+    onGetSingleQueueDetails(tenant, company, req.params.businessUnit, req.params.queueId).then(function (result) {
         res.end(result.jsonString);
-    }).catch(function(err){
+    }).catch(function (err) {
         console.log(err);
         res.end(messageFormatter.FormatMessage(err, "OnGetSingleQueueDetails: Error", false, undefined));
     });
 };
 
-var OnGetTotalCount = function(req,res){
+var OnGetTotalCount = function (req, res) {
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetTotalCount(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function(result){
+    onGetTotalCount(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function (result) {
         res.end(result.jsonString);
-    }).catch(function(err){
+    }).catch(function (err) {
         console.log(err);
         res.end(messageFormatter.FormatMessage(err, "OnGetTotalCount: Error", false, 0));
     });
 
 };
 
-var OnGetTotalTime = function(req,res){
+var OnGetTotalTime = function (req, res) {
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetTotalTime(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function(result){
+    onGetTotalTime(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function (result) {
         res.end(result.jsonString);
-    }).catch(function(err){
+    }).catch(function (err) {
         console.log(err);
         res.end(messageFormatter.FormatMessage(err, "OnGetTotalTime: Error", false, 0));
     });
 
 };
 
-var OnGetTotalTimeWithCurrentSessions = function(req,res){
+var OnGetTotalTimeWithCurrentSessions = function (req, res) {
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetTotalTimeWithCurrentSessions(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function(result){
+    onGetTotalTimeWithCurrentSessions(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function (result) {
         res.end(result.jsonString);
-    }).catch(function(err){
+    }).catch(function (err) {
         console.log(err);
         res.end(messageFormatter.FormatMessage(err, "OnGetTotalTimeWithCurrentSessions: Error", false, 0));
     });
 
 };
 
-var OnGetAverageTimeWithCurrentSessions = function(req,res){
+var OnGetAverageTimeWithCurrentSessions = function (req, res) {
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetAverageTimeWithCurrentSessions(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function(result){
+    onGetAverageTimeWithCurrentSessions(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function (result) {
         res.end(result.jsonString);
-    }).catch(function(err){
+    }).catch(function (err) {
         console.log(err);
         res.end(messageFormatter.FormatMessage(err, "OnGetAverageTimeWithCurrentSessions: Error", false, 0));
     });
 
 };
 
-var OnGetAverageTimePerKeyWithCurrentSessions = function(req,res){
+var OnGetAverageTimePerKeyWithCurrentSessions = function (req, res) {
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetAverageTimePerKeyWithCurrentSessions(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function(result){
+    onGetAverageTimePerKeyWithCurrentSessions(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function (result) {
         res.end(result.jsonString);
-    }).catch(function(err){
+    }).catch(function (err) {
         console.log(err);
         res.end(messageFormatter.FormatMessage(err, "OnGetAverageTimeWithCurrentSessions: Error", false, 0));
     });
 
 };
 
-var OnGetAverageCountPerKey = function(req,res){
+var OnGetAverageCountPerKey = function (req, res) {
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetAverageCountPerKey(tenant, company, req.params.businessUnit, req.params.countWindow, req.params.countParam1, req.params.countParam2, req.params.keyWindow, req.params.keyParam1, req.params.keyParam2).then(function(result){
+    onGetAverageCountPerKey(tenant, company, req.params.businessUnit, req.params.countWindow, req.params.countParam1, req.params.countParam2, req.params.keyWindow, req.params.keyParam1, req.params.keyParam2).then(function (result) {
         res.end(result.jsonString);
-    }).catch(function(err){
+    }).catch(function (err) {
         console.log(err);
         res.end(messageFormatter.FormatMessage(err, "OnGetAverageCountPerKey: Error", false, 0));
     });
 
 };
 
-var OnGetCountPerKey = function(req,res){
+var OnGetCountPerKey = function (req, res) {
     var tenant = req.user.tenant;
     var company = req.user.company;
 
-    onGetTotalKeyCount(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function(result){
+    onGetTotalKeyCount(tenant, company, req.params.businessUnit, req.params.window, req.params.param1, req.params.param2).then(function (result) {
         res.end(result.jsonString);
-    }).catch(function(err){
+    }).catch(function (err) {
         console.log(err);
         res.end(messageFormatter.FormatMessage(err, "OnGetCountPerKey: Error", false, 0));
     });
