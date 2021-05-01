@@ -124,7 +124,7 @@ module.exports = {
         "vhost": "SYS_RABBITMQ_VHOSt"
     },
 
-    "Services" : {
+    "Services": {
         "accessToken": "HOST_TOKEN",
         "notificationServiceHost": "SYS_NOTIFICATIONSERVICE_HOST",
         "notificationServicePort": "SYS_NOTIFICATIONSERVICE_PORT",
@@ -135,21 +135,21 @@ module.exports = {
         "resourceServiceVersion": "SYS_RESOURCESERVICE_VERSION",
 
         "uploadurl": "SYS_FILESERVICE_HOST",
-        "uploadport":"SYS_FILESERVICE_PORT",
-        "uploadurlVersion":"SYS_FILESERVICE_VERSION",
+        "uploadport": "SYS_FILESERVICE_PORT",
+        "uploadurlVersion": "SYS_FILESERVICE_VERSION",
 
         "interactionurl": "SYS_INTERACTIONS_HOST",
         "interactionport": "SYS_INTERACTIONS_PORT",
-        "interactionversion":"SYS_INTERACTIONS_VERSION",
+        "interactionversion": "SYS_INTERACTIONS_VERSION",
 
 
         "cronurl": "SYS_SCHEDULEWORKER_HOST",
         "cronport": "SYS_SCHEDULEWORKER_PORT",
-        "cronversion":"SYS_SCHEDULEWORKER_VERSION",
+        "cronversion": "SYS_SCHEDULEWORKER_VERSION",
 
 
         "ticketServiceHost": "SYS_LITETICKET_HOST",
-        "ticketServicePort":  "SYS_LITETICKET_PORT",
-        "ticketServiceVersion":  "SYS_LITETICKET_VERSION",
+        "ticketServicePort": "SYS_LITETICKET_PORT",
+        "ticketServiceVersion": "SYS_LITETICKET_VERSION",
     }
 };
